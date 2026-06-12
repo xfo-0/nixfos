@@ -13,6 +13,7 @@
     starred: "starred = 1"
   }
   repos: [
+    {url: "github.com/xfo-0/repos", tags: [cli, own], note: "repos cli upstream; extracted from modules/den/aspects/apps/cli/repos"}
     {url: "github.com/vic/den", aliases: ["github.com/sini/den", "github.com/denful/den"], tags: [den, reference], note: "den framework upstream; we ride feat/entity-gen-schema-port (sini)"}
     {url: "github.com/vic/flake-file", aliases: ["github.com/denful/flake-file", "github.com/xfo-0/flake-file"], tags: [den, merged-fork-ref], note: "tack PR #120 merged 2026-06-11"}
     {url: "github.com/vic/with-inputs", aliases: ["github.com/denful/with-inputs", "github.com/xfo-0/with-inputs"], tags: [den, merged-fork-ref], note: "from.tack loader PR #14 merged 2026-06-11"}
