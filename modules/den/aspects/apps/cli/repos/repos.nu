@@ -7,17 +7,36 @@ def manifest-path [] {
   )
 }
 
-def manifest-load [] {
-  let main = (open (manifest-path))
-  ($main.include? | default [])
-  | where {|p| $p | path exists }
-  | reduce -f $main {|p, acc|
-      let m = (open $p)
-      $acc
-      | upsert roots ((($acc.roots? | default []) ++ ($m.roots? | default [])) | uniq)
-      | upsert groups (($acc.groups? | default {}) | merge ($m.groups? | default {}))
-      | upsert repos (($acc.repos? | default []) ++ ($m.repos? | default []))
+def projects-dir [] {
+  if ($env.XDG_PROJECTS_DIR? | is-not-empty) {
+    return $env.XDG_PROJECTS_DIR
+  }
+  let r = (do { xdg-user-dir PROJECTS } | complete)
+  if $r.exit_code == 0 {
+    let d = ($r.stdout | str trim)
+    if ($d | is-not-empty) and $d != $env.HOME {
+      return $d
     }
+  }
+  $env.HOME | path join "Projects"
+}
+
+def manifest-load [] {
+  let main = (if ((manifest-path) | path exists) { open (manifest-path) } else { {} })
+  let merged = (($main.include? | default [])
+    | where {|p| $p | path exists }
+    | reduce -f $main {|p, acc|
+        let m = (open $p)
+        $acc
+        | upsert roots ((($acc.roots? | default []) ++ ($m.roots? | default [])) | uniq)
+        | upsert groups (($acc.groups? | default {}) | merge ($m.groups? | default {}))
+        | upsert repos (($acc.repos? | default []) ++ ($m.repos? | default []))
+      })
+  if (($merged.roots? | default []) | is-empty) {
+    $merged | upsert roots [(projects-dir)]
+  } else {
+    $merged
+  }
 }
 
 def cache-db [] {
