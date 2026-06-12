@@ -2,6 +2,23 @@
   den.aspects.xdg-termfilechooser = {
     homeManager =
       { pkgs, lib, ... }:
+      let
+        term-filechooser = pkgs.writeShellApplication {
+          name = "term-filechooser";
+          runtimeInputs = [ pkgs.foot ];
+          text = ''
+            if ! systemctl --user is-active -q foot.service; then
+              systemctl --user start foot.service || true
+              sock="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/foot-''${WAYLAND_DISPLAY:-wayland-1}.sock"
+              for _ in $(seq 1 40); do
+                [ -S "$sock" ] && break
+                sleep 0.05
+              done
+            fi
+            exec footclient --app-id=term_filechooser "$@"
+          '';
+        };
+      in
       {
         xdg.portal = {
           extraPortals = lib.mkDefault [ pkgs.xdg-desktop-portal-termfilechooser ];
@@ -12,7 +29,7 @@
           [filechooser]
           cmd=${pkgs.xdg-desktop-portal-termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
           default_dir=$HOME
-          env=TERMCMD='${pkgs.foot}/bin/footclient --app-id=term_filechooser'
+          env=TERMCMD='${term-filechooser}/bin/term-filechooser'
           env=PATH="$PATH:/run/current-system/sw/bin"
         '';
       };
