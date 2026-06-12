@@ -65,10 +65,6 @@
       {
         directories = [
           {
-            directory = ".engram";
-            how = "symlink";
-          }
-          {
             directory = "${hmConfig.xdg.configHome}/opencode";
             how = "symlink";
           }

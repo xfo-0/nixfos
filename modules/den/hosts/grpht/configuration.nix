@@ -16,7 +16,6 @@
     includes = with den.aspects; [
       <boot/limine>
       <desktop-type/window-manager/niri>
-      kde-connect
       (<disko> ./hardware/_disko.nix)
       services.binary-cache.harmonia
       services.binary-cache.harmonia-client

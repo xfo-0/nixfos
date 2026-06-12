@@ -322,10 +322,10 @@
               idle = d {
                 enabled = true;
                 fadeDuration = 5;
-                screenOffTimeout = 180;
+                screenOffTimeout = 300;
                 screenOffCommand = "";
                 resumeScreenOffCommand = "";
-                lockTimeout = 300;
+                lockTimeout = 600;
                 lockCommand = "";
                 resumeLockCommand = "";
                 suspendTimeout = 0;

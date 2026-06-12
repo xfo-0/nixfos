@@ -107,7 +107,6 @@
       adb
       fosi-ds2
       coolercontrol
-      kde-connect
       sunshine
       <desktop-type/window-manager/niri>
     ];

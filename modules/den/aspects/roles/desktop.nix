@@ -17,6 +17,7 @@
       mpv
       browser
       cad
+      kde-connect
     ];
   };
 }
