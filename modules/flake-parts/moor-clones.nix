@@ -5,12 +5,16 @@ let
     gitlab = "gitlab.com";
     sourcehut = "git.sr.ht";
   };
-  refPrefixes = {
-    "gh:" = "github.com";
-    "github:" = "github.com";
-    "gitlab:" = "gitlab.com";
-    "sourcehut:" = "git.sr.ht";
-  };
+  shorturls = config.flake-file.tack.shorturls or { };
+  expand =
+    u:
+    let
+      m = lib.findFirst (k: lib.hasPrefix "${k}:" u) null (lib.attrNames shorturls);
+    in
+    if m == null then
+      u
+    else
+      lib.replaceStrings [ "{path}" ] [ (lib.removePrefix "${m}:" u) ] shorturls.${m};
   normalize =
     u:
     let
@@ -23,20 +27,20 @@ let
     lib.concatStringsSep "/" (
       lib.take 2 (lib.splitString "/" (builtins.head (lib.splitString "?" p)))
     );
-  refHost = u: lib.findFirst (pfx: lib.hasPrefix pfx u) null (lib.attrNames refPrefixes);
   toUrl =
     inp:
     let
       t = if (inp.type or null) == null then "github" else inp.type;
       typeHost = if (inp.host or "") != "" then inp.host else hostFor.${t} or null;
-      pfx = refHost (inp.url or "");
+      u = expand (inp.url or "");
+      refType = lib.findFirst (ty: lib.hasPrefix "${ty}:" u) null (lib.attrNames hostFor);
     in
     if (inp.owner or "") != "" && (inp.repo or "") != "" && typeHost != null then
       "${typeHost}/${inp.owner}/${inp.repo}"
-    else if pfx != null then
-      "${refPrefixes.${pfx}}/" + shortPath (lib.removePrefix pfx inp.url)
+    else if refType != null then
+      "${hostFor.${refType}}/" + shortPath (lib.removePrefix "${refType}:" u)
     else
-      normalize inp.url;
+      normalize u;
 in
 {
   options.flake-file.inputs = lib.mkOption {
