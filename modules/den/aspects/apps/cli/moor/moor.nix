@@ -5,8 +5,12 @@ in
 {
   den.aspects.moor = {
     homeManager =
-      { config, ... }:
+      { config, pkgs, ... }:
       {
+        home.packages = [
+          pkgs.fd
+          pkgs.tokei
+        ];
         xdg.configFile."nushell/moor.nu".source = ./moor.nu;
         xdg.configFile."moor/inputs.json".text = builtins.toJSON { repos = cloneEntries; };
         programs.nushell = {

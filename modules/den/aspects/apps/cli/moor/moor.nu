@@ -125,19 +125,35 @@ export def main [] {
   scope commands | where name =~ '^moor ' | select name description
 }
 
+def gh-list-items [id: string] {
+  mut items = []
+  mut cursor = ""
+  loop {
+    let after = (if ($cursor | is-empty) { "" } else { ', after: "' + $cursor + '"' })
+    let q = ('{ node(id: "' + $id + '") { ... on UserList { items(first: 100' + $after + ') { nodes { ... on Repository { nameWithOwner } } pageInfo { hasNextPage endCursor } } } } }')
+    let r = (do { gh api graphql -f ("query=" + $q) } | complete)
+    if $r.exit_code != 0 { break }
+    let d = ($r.stdout | from json | get data.node.items)
+    $items = ($items ++ ($d.nodes | each {|n| $"github.com/($n.nameWithOwner)" }))
+    if not $d.pageInfo.hasNextPage { break }
+    $cursor = $d.pageInfo.endCursor
+  }
+  $items
+}
+
 # sync GitHub starred repos and lists into local cache (used by `moor scan`)
 export def "moor gh-sync" [] {
   let starred = (gh api user/starred --paginate --jq ".[].full_name" | lines | each {|s| $"github.com/($s)" })
-  let res = (do { gh api graphql -f query="{ viewer { lists(first: 50) { nodes { name items(first: 100) { nodes { ... on Repository { nameWithOwner } } } } } } }" } | complete)
+  let res = (do { gh api graphql -f query="{ viewer { lists(first: 100) { nodes { id name } } } }" } | complete)
   let lists = (if $res.exit_code == 0 {
     $res.stdout | from json | get data.viewer.lists.nodes | each {|l|
-      { name: $l.name, repos: ($l.items.nodes | each {|n| $"github.com/($n.nameWithOwner)" }) }
+      { name: $l.name, repos: (gh-list-items $l.id) }
     }
   } else {
     []
   })
   { starred: $starred, lists: $lists } | save -f (gh-cache-path)
-  print $"gh-sync: ($starred | length) starred, ($lists | length) lists -> (gh-cache-path)"
+  print $"gh-sync: ($starred | length) starred, ($lists | length) lists \(($lists | get repos | flatten | length) repos\) -> (gh-cache-path)"
 }
 
 def repo-dirty [p: string, vcs: string] {
