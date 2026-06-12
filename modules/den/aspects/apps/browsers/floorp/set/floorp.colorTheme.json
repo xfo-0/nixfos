@@ -1,0 +1,177 @@
+{
+  "toolbar": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_text": {
+    "r": 88,
+    "g": 88,
+    "b": 88
+  },
+  "frame": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "tab_background_text": {
+    "r": 145,
+    "g": 145,
+    "b": 145
+  },
+  "toolbar_field": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_field_text": {
+    "r": 209,
+    "g": 209,
+    "b": 209
+  },
+  "tab_line": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "popup": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "popup_text": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "button_background_active": {
+    "r": 117,
+    "g": 121,
+    "b": 127
+  },
+  "frame_inactive": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "icons_attention": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "icons": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "ntp_background": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "ntp_text": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "popup_border": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "popup_highlight_text": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "popup_highlight": {
+    "r": 117,
+    "g": 121,
+    "b": 127
+  },
+  "sidebar_border": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "sidebar_highlight_text": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "sidebar_highlight": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "sidebar_text": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "sidebar": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "tab_background_separator": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "tab_loading": {
+    "r": 197,
+    "g": 201,
+    "b": 199
+  },
+  "tab_selected": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "tab_text": {
+    "r": 247,
+    "g": 247,
+    "b": 247
+  },
+  "toolbar_bottom_separator": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_field_border_focus": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "toolbar_field_border": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_field_focus": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_field_highlight_text": {
+    "r": 0,
+    "g": 0,
+    "b": 0
+  },
+  "toolbar_field_highlight": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "toolbar_field_separator": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  },
+  "toolbar_vertical_separator": {
+    "r": 139,
+    "g": 164,
+    "b": 176
+  }
+}
