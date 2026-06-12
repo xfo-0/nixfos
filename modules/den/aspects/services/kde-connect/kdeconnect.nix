@@ -1,12 +1,12 @@
 {
   den.aspects.kde-connect = {
     nixos =
-      { pkgs, lib, ... }:
+      { pkgs, ... }:
       {
-        programs.kdeconnect = {
-          enable = lib.mkDefault true;
-          package = lib.mkDefault pkgs.kdePackages.kdeconnect-kde;
-        };
+        environment.systemPackages = [
+          pkgs.kdePackages.kdeconnect-kde
+          pkgs.sshfs
+        ];
       };
 
     persistUser =
