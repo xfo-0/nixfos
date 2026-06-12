@@ -38,7 +38,6 @@
           programs.nix-ld.enable = lib.mkDefault true;
 
           system.stateVersion = lib.mkDefault "25.11";
-          nixpkgs.config.allowUnfree = lib.mkDefault true;
 
           security = {
             sudo.enable = false;

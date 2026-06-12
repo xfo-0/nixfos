@@ -1,6 +1,17 @@
 { den, ... }:
 {
   den.aspects.firmware = {
+    includes = [
+      # unfree blobs pulled in by hardware.enableAllFirmware
+      (den.batteries.unfree [
+        "broadcom-bt-firmware"
+        "b43-firmware"
+        "xone-dongle-firmware"
+        "facetimehd-calibration"
+        "facetimehd-firmware"
+      ])
+    ];
+
     nixos =
       { config, lib, ... }:
       let
