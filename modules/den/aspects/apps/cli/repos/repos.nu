@@ -211,6 +211,7 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
       dirty: (repo-dirty $p $vcs)
       tags: (if ($cur | is-empty) { "" } else { $cur.0.tags | str join "," })
       note: (if ($cur | is-empty) { "" } else { $cur.0.note? | default "" })
+      private: (if ($cur | is-empty) { 0 } else { if ($cur.0.private? | default false) { 1 } else { 0 } })
       starred: (if ($url in $gh.starred) { 1 } else { 0 })
       gh_lists: ($gh.lists | where {|l| $url in $l.repos } | get name | str join ",")
     }
@@ -355,21 +356,95 @@ export def "repo groups" [] {
   manifest-load | get groups
 }
 
+def ws-backing [p: string, vcs: string] {
+  if $vcs == "jj" {
+    let raw = (open ($p | path join ".jj/repo") | str trim)
+    if ($raw | str starts-with "/") { $raw } else { $p | path join ".jj" $raw | path expand -n }
+  } else {
+    let raw = (open ($p | path join ".git") | str trim | str replace -r '^gitdir: ' '')
+    if ($raw | str starts-with "/") { $raw } else { $p | path join $raw | path expand -n }
+  }
+}
+
+def resolve-repo [q: string] {
+  let db = (cache-db)
+  if not ($db | path exists) {
+    error make { msg: "no cache, run `repo scan` first" }
+  }
+  let rows = (open $db | query db $"select * from repos_base where ws = 0 and \(name = '($q)' or url like '%($q)%' or path like '%($q)%'\)")
+  if ($rows | length) == 1 {
+    $rows.0
+  } else if ($rows | is-empty) {
+    error make { msg: $"no repo matches ($q)" }
+  } else {
+    error make { msg: $"ambiguous ($q): ($rows | get path | str join ', ')" }
+  }
+}
+
+# add a jj workspace for a repo at <root>/<host>/<owner>/<name>@<ws-name>
+export def "repo ws add" [query: string, name: string] {
+  let r = (resolve-repo $query)
+  if $r.vcs != "jj" {
+    error make { msg: $"($r.path) is not jj-managed; git worktrees not supported yet" }
+  }
+  let root = (manifest-load | get roots | get 0)
+  let dest = ($root | path join ($r.url + "@" + $name))
+  if ($dest | path exists) {
+    error make { msg: $"($dest) already exists" }
+  }
+  mkdir ($dest | path dirname)
+  jj -R $r.path workspace add --name $name $dest
+  print $"workspace ($name): ($dest)  re-run `repo scan`"
+}
+
+# forget a jj workspace and delete its directory; refuses if it has changes
+export def "repo ws rm" [path: string] {
+  let p = ($path | path expand)
+  let repof = ($p | path join ".jj/repo")
+  if (($repof | path type) != "file") {
+    error make { msg: $"($p) is not a jj workspace" }
+  }
+  let st = (do { jj -R $p log -r "@" --no-graph -T 'if(empty, "clean", "dirty")' } | complete)
+  if ($st.stdout | str contains "dirty") {
+    error make { msg: $"($p) has uncommitted changes; commit or abandon first" }
+  }
+  let primary = (ws-backing $p "jj" | path dirname | path dirname)
+  let name = ($p | path basename | split row "@" | last)
+  jj -R $primary workspace forget $name
+  rm -rf $p
+  print $"removed workspace ($name) at ($p)  re-run `repo scan`"
+}
+
 # report layout drift and missing pin remotes; canonical path is
 # <root>/<host>/<owner>/<name>, workspaces/worktrees get @<ref> suffix
 export def "repo doctor" [--add-remotes, --fix-layout] {
   let m = (manifest-load)
   let root = ($m.roots | get 0)
   let issues = (repo ls | each {|r|
-    let layout = (if ($r.url | is-empty) {
+    let orphan = (if $r.ws == 1 {
+      let target = (ws-backing $r.path $r.vcs)
+      if ($target | path exists) { [] } else {
+        [{ path: $r.path, issue: "ws-orphaned", fix: $"# backing repo missing: ($target); files salvageable as plain tree" }]
+      }
+    } else {
+      []
+    })
+    let layout = (if ($orphan | is-not-empty) {
+      []
+    } else if ($r.url | is-empty) {
       [{ path: $r.path, issue: "no-origin", fix: "" }]
     } else {
+      let base = ($root | path join $r.url)
       let expected = (if $r.ws == 1 {
-        if ($r.ref | is-empty) { "" } else {
-          $root | path join $"($r.url)@($r.ref | str replace -a '/' '-')"
+        if ($r.path | str starts-with ($base + "@")) {
+          $r.path
+        } else if ($r.ref | is-empty) {
+          ""
+        } else {
+          $base + "@" + ($r.ref | str replace -a "/" "-")
         }
       } else {
-        $root | path join $r.url
+        $base
       })
       if ($expected | is-empty) or $r.path == $expected { [] } else if ($expected | path exists) {
         [{ path: $r.path, issue: "layout-collision", fix: $"# ($expected) already exists" }]
@@ -377,7 +452,7 @@ export def "repo doctor" [--add-remotes, --fix-layout] {
         [{ path: $r.path, issue: "layout", fix: $"mkdir -p '($expected | path dirname)' && mv '($r.path)' '($expected)'" }]
       }
     })
-    $layout
+    $orphan ++ $layout
   } | flatten)
   let remotes = (open (cache-db)
     | query db "select p.path, p.url as pin_url, b.url, b.vcs from pins p join repos_base b on p.path = b.path where p.local = 0 and p.url != '' and p.url != b.url"

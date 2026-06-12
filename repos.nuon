@@ -12,6 +12,7 @@
     dirty: "dirty = 1"
     behind: "pin_behind > 0"
     starred: "starred = 1"
+    private: "private = 1"
   }
   repos: [
     {url: "github.com/xfo-0/repos", tags: [cli, own], note: "repos cli upstream; extracted from modules/den/aspects/apps/cli/repos"}

@@ -40,6 +40,10 @@ in
                 type = lib.types.str;
                 default = "";
               };
+              private = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+              };
             };
           }
         ];
@@ -52,7 +56,12 @@ in
     readOnly = true;
     default = lib.mapAttrsToList (input: inp: {
       url = toUrl inp;
-      inherit (inp.clone) tags aliases note;
+      inherit (inp.clone)
+        tags
+        aliases
+        note
+        private
+        ;
       inherit input;
     }) (lib.filterAttrs (_: inp: inp.clone.enable) config.flake-file.inputs);
     defaultText = "repos manifest entries derived from flake-file.inputs.*.clone";

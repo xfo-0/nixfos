@@ -1665,46 +1665,6 @@
         home.packages = with pkgs; [
           difftastic
           watchman
-          (writeShellApplication {
-            name = "jjws";
-            text = ''
-              base="''${JJWS_BASE:-$HOME/ws}"
-              usage() {
-                echo "usage: jjws add <name> [jj workspace add args] | ls | path <name> | rm <name>" >&2
-                exit 1
-              }
-              cmd="''${1:-ls}"
-              shift || true
-              repo=$(basename "$(jj root)")
-              wsdir() { echo "$base/$repo/$1"; }
-              case "$cmd" in
-                add)
-                  [ "$#" -ge 1 ] || usage
-                  name="$1"
-                  shift
-                  d=$(wsdir "$name")
-                  mkdir -p "$(dirname "$d")"
-                  jj workspace add --name "$name" "$@" "$d"
-                  echo "$d"
-                  ;;
-                ls)
-                  jj workspace list
-                  ;;
-                path)
-                  [ "$#" -ge 1 ] || usage
-                  wsdir "$1"
-                  ;;
-                rm)
-                  [ "$#" -ge 1 ] || usage
-                  jj workspace forget "$1"
-                  rm -rf "$(wsdir "$1")"
-                  ;;
-                *)
-                  usage
-                  ;;
-              esac
-            '';
-          })
         ];
 
         xdg.configFile."jjui/empty-bindings.toml".text = ''
@@ -1734,10 +1694,6 @@
         directories = [
           {
             directory = "${hmConfig.xdg.configHome}/jj/repos";
-            how = "symlink";
-          }
-          {
-            directory = "ws";
             how = "symlink";
           }
         ];
