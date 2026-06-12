@@ -26,7 +26,6 @@
           enable = true;
           workers = 8;
           bind = "0.0.0.0:5000";
-          openFirewall = true;
           publicKey = "AO05-1:29mCAXB4ohmugmD46kOGtgvHHYhGlJUX/J6uUjHjn24=";
         };
       };
@@ -107,6 +106,7 @@
       adb
       fosi-ds2
       coolercontrol
+      network.hardening
       sunshine
       <desktop-type/window-manager/niri>
     ];
