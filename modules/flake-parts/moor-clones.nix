@@ -1,5 +1,16 @@
 { lib, config, ... }:
 let
+  hostFor = {
+    github = "github.com";
+    gitlab = "gitlab.com";
+    sourcehut = "git.sr.ht";
+  };
+  refPrefixes = {
+    "gh:" = "github.com";
+    "github:" = "github.com";
+    "gitlab:" = "gitlab.com";
+    "sourcehut:" = "git.sr.ht";
+  };
   normalize =
     u:
     let
@@ -7,15 +18,23 @@ let
       noProto = lib.last (lib.splitString "://" noQuery);
     in
     lib.removeSuffix ".git" noProto;
-  shortPath = p: lib.concatStringsSep "/" (lib.take 2 (lib.splitString "/" p));
+  shortPath =
+    p:
+    lib.concatStringsSep "/" (
+      lib.take 2 (lib.splitString "/" (builtins.head (lib.splitString "?" p)))
+    );
+  refHost = u: lib.findFirst (pfx: lib.hasPrefix pfx u) null (lib.attrNames refPrefixes);
   toUrl =
     inp:
-    if (inp.owner or "") != "" && (inp.repo or "") != "" then
-      "github.com/${inp.owner}/${inp.repo}"
-    else if lib.hasPrefix "gh:" inp.url then
-      "github.com/" + shortPath (lib.removePrefix "gh:" inp.url)
-    else if lib.hasPrefix "github:" inp.url then
-      "github.com/" + shortPath (lib.removePrefix "github:" inp.url)
+    let
+      t = if (inp.type or null) == null then "github" else inp.type;
+      typeHost = if (inp.host or "") != "" then inp.host else hostFor.${t} or null;
+      pfx = refHost (inp.url or "");
+    in
+    if (inp.owner or "") != "" && (inp.repo or "") != "" && typeHost != null then
+      "${typeHost}/${inp.owner}/${inp.repo}"
+    else if pfx != null then
+      "${refPrefixes.${pfx}}/" + shortPath (lib.removePrefix pfx inp.url)
     else
       normalize inp.url;
 in
@@ -27,7 +46,7 @@ in
         modules = [
           {
             options.clone = {
-              enable = lib.mkEnableOption "register a working clone of this input in the moor manifest";
+              enable = lib.mkEnableOption "register a working clone of this input in the repos manifest";
               tags = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
                 default = [ ];

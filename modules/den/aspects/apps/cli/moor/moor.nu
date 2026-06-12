@@ -80,8 +80,13 @@ def pin-map [] {
   $entries
   | where {|r| ($r.meta | describe | str starts-with "record") and ($r.meta.rev? | is-not-empty) }
   | each {|r|
-      let url = (if ($r.meta.type? == "github") {
-        $"github.com/($r.meta.owner)/($r.meta.repo)"
+      let url = (if ($r.meta.type? in ["github", "gitlab", "sourcehut"]) {
+        let host = ($r.meta.host? | default (match $r.meta.type? {
+          "gitlab" => "gitlab.com"
+          "sourcehut" => "git.sr.ht"
+          _ => "github.com"
+        }))
+        $"($host)/($r.meta.owner)/($r.meta.repo)"
       } else if ($r.meta.url? | is-not-empty) {
         normalize-url $r.meta.url
       } else {
