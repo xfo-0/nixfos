@@ -262,8 +262,17 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
 # scan manifest roots for git/jj repos and rebuild the cache db
 export def "moor scan" [] {
   let m = (manifest-load)
-  let curated = ($m.repos? | default [])
   let pins = (pin-map)
+  let curated = ($m.repos? | default []
+    | each {|c|
+        if (($c.url? | default "") == "") and ($c.input? | default "" | is-not-empty) {
+          let pin = ($pins | where input == $c.input)
+          if ($pin | is-empty) { $c } else { $c | upsert url $pin.0.url }
+        } else {
+          $c
+        }
+      }
+    | where {|c| ($c.url? | default "") != "" })
   let dirs = ($m.roots
     | each {|root| fd -H --no-ignore -t d -t f -d 8 '^\.(jj|git)$' $root | lines | each {|l| $l | path dirname } }
     | flatten

@@ -27,7 +27,6 @@
         clone = {
           enable = true;
           tags = [ "den" ];
-          aliases = [ "github.com/vic/import-tree" ];
         };
       };
       den.url = "gh:sini/den/688478b9d9597088beb28b0f39d55f7d31744a07";
