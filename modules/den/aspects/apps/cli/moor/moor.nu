@@ -263,16 +263,7 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
 export def "moor scan" [] {
   let m = (manifest-load)
   let pins = (pin-map)
-  let curated = ($m.repos? | default []
-    | each {|c|
-        if (($c.url? | default "") == "") and ($c.input? | default "" | is-not-empty) {
-          let pin = ($pins | where input == $c.input)
-          if ($pin | is-empty) { $c } else { $c | upsert url $pin.0.url }
-        } else {
-          $c
-        }
-      }
-    | where {|c| ($c.url? | default "") != "" })
+  let curated = (resolve-curated ($m.repos? | default []) $pins)
   let dirs = ($m.roots
     | each {|root| fd -H --no-ignore -t d -t f -d 8 '^\.(jj|git)$' $root | lines | each {|l| $l | path dirname } }
     | flatten
@@ -402,6 +393,19 @@ export def "moor groups" [] {
   manifest-load | get groups
 }
 
+def resolve-curated [repos: list, pins: list] {
+  $repos
+  | each {|c|
+      if (($c.url? | default "") == "") and ($c.input? | default "" | is-not-empty) {
+        let pin = ($pins | where input == $c.input)
+        if ($pin | is-empty) { $c } else { $c | upsert url $pin.0.url }
+      } else {
+        $c
+      }
+    }
+  | where {|c| ($c.url? | default "") != "" }
+}
+
 def ws-backing [p: string, vcs: string] {
   if $vcs == "jj" {
     let raw = (open ($p | path join ".jj/repo") | str trim)
@@ -461,9 +465,9 @@ export def "moor ws rm" [path: string] {
   print $"removed workspace ($name) at ($p)  re-run `moor scan`"
 }
 
-# report layout drift and missing pin remotes; canonical path is
-# <root>/<host>/<owner>/<name>, workspaces/worktrees get @<ref> suffix
-export def "moor doctor" [--add-remotes, --fix-layout] {
+# report layout drift, missing pin remotes and missing curated clones;
+# canonical path is <root>/<host>/<owner>/<name>, workspaces get @<ref> suffix
+export def "moor doctor" [--add-remotes, --fix-layout, --clone] {
   let m = (manifest-load)
   let root = ($m.roots | get 0)
   let issues = (moor ls | each {|r|
@@ -511,7 +515,27 @@ export def "moor doctor" [--add-remotes, --fix-layout] {
         })
         { path: $r.path, issue: "pin-remote-missing", fix: $cmd }
       })
-  let issues = ($issues ++ $remotes)
+  let known = (moor ls | get url | where {|u| $u | is-not-empty })
+  let missing = (resolve-curated ($m.repos? | default []) (pin-map)
+    | where {|c|
+        let ids = ([$c.url] ++ ($c.aliases? | default []))
+        ($known | where {|u| $u in $ids } | is-empty)
+      }
+    | each {|c|
+        let dest = ($root | path join $c.url)
+        { path: $dest, issue: "clone-missing", fix: $"mkdir -p '($dest | path dirname)' && jj git clone --colocate 'https://($c.url)' '($dest)'" }
+      })
+  let issues = ($issues ++ $remotes ++ $missing)
+  if $clone {
+    $issues | where issue == "clone-missing" | each {|i|
+      print $"applying: ($i.fix)"
+      let res = (do { sh -c $i.fix } | complete)
+      if $res.exit_code != 0 {
+        print $"  failed: ($res.stderr | str trim)"
+      }
+    }
+    print "clones created; re-run `moor scan`"
+  }
   if $add_remotes {
     $issues | where issue == "pin-remote-missing" | each {|i|
       print $"applying: ($i.fix)"
