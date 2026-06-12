@@ -33,13 +33,13 @@
               createDirectories = true;
               setSessionVariables = true;
               documents = "${config.home.homeDirectory}/Documents";
-              desktop = "${docs}/Desktop";
               download = "${docs}/Downloads";
               pictures = "${docs}/Pictures";
-              videos = "${docs}/Videos";
-              music = "${docs}/Music";
               projects = "${docs}/projects";
-              templates = "${docs}/Templates";
+              desktop = docs;
+              videos = docs;
+              music = docs;
+              templates = docs;
               publicShare = null;
             };
 
@@ -68,24 +68,15 @@
       };
 
     persistUser =
-      { hmConfig, lib, ... }:
+      { hmConfig, ... }:
       {
-        directories =
-          lib.map
-            (path: {
-              directory = path;
-              how = "symlink";
-              createLinkTarget = true;
-            })
-            [
-              "${hmConfig.xdg.userDirs.documents}"
-              "${hmConfig.xdg.userDirs.desktop}"
-              "${hmConfig.xdg.userDirs.download}"
-              "${hmConfig.xdg.userDirs.pictures}"
-              "${hmConfig.xdg.userDirs.videos}"
-              "${hmConfig.xdg.userDirs.music}"
-              "${hmConfig.xdg.userDirs.templates}"
-            ];
+        directories = [
+          {
+            directory = "${hmConfig.xdg.userDirs.documents}";
+            how = "symlink";
+            createLinkTarget = true;
+          }
+        ];
 
         files = [
           {
