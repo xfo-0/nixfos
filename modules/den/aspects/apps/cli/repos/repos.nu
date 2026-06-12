@@ -70,6 +70,12 @@ def gh-cache [] {
   if ($p | path exists) { open $p } else { { starred: [], lists: [] } }
 }
 
+# overview of repo subcommands
+export def repo [] {
+  scope commands | where name =~ '^repo ' | select name description
+}
+
+# sync GitHub starred repos and lists into local cache (used by `repo scan`)
 export def "repo gh-sync" [] {
   let starred = (gh api user/starred --paginate --jq ".[].full_name" | lines | each {|s| $"github.com/($s)" })
   let res = (do { gh api graphql -f query="{ viewer { lists(first: 50) { nodes { name items(first: 100) { nodes { ... on Repository { nameWithOwner } } } } } } }" } | complete)
@@ -112,6 +118,20 @@ def rev-exists [p: string, rev: string] {
   }
 }
 
+def repo-ref [p: string, vcs: string] {
+  if $vcs == "jj" {
+    let r = (do { jj -R $p --ignore-working-copy log -r "latest(::@ & bookmarks())" --no-graph -T "bookmarks" } | complete)
+    if $r.exit_code == 0 {
+      $r.stdout | str trim | split row " " | get 0? | default "" | str replace -r '[*?]+$' ""
+    } else {
+      ""
+    }
+  } else {
+    let r = (do { git -C $p branch --show-current } | complete)
+    if $r.exit_code == 0 { $r.stdout | str trim } else { "" }
+  }
+}
+
 def scan-one [p: string, curated: list, pins: list, gh: record] {
   let raw = (repo-origin $p)
   let url = (if ($raw | is-empty) { "" } else { normalize-url $raw })
@@ -134,6 +154,11 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
   })
   let pin_rev = (if ($pin | is-empty) { "" } else { $pin.0.rev })
   let vcs = (if ($p | path join ".jj" | path exists) { "jj" } else { "git" })
+  let ws = (if $vcs == "jj" {
+    if (($p | path join ".jj/repo" | path type) == "file") { 1 } else { 0 }
+  } else {
+    if (($p | path join ".git" | path type) == "file") { 1 } else { 0 }
+  })
   {
     path: $p
     url: $url
@@ -141,6 +166,8 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
     owner: $parts.owner
     name: $parts.name
     vcs: $vcs
+    ws: $ws
+    ref: (repo-ref $p $vcs)
     flake: (if ($p | path join "flake.nix" | path exists) { 1 } else { 0 })
     langs: $langs
     dirty: (repo-dirty $p $vcs)
@@ -156,12 +183,13 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
   }
 }
 
+# scan manifest roots for git/jj repos and rebuild the cache db
 export def "repo scan" [] {
   let m = (open (manifest-path))
   let curated = ($m.repos? | default [])
   let pins = (pin-map)
   let dirs = ($m.roots
-    | each {|root| fd -H --no-ignore -t d -d 8 '^\.(jj|git)$' $root | lines | each {|l| $l | path dirname } }
+    | each {|root| fd -H --no-ignore -t d -t f -d 8 '^\.(jj|git)$' $root | lines | each {|l| $l | path dirname } }
     | flatten
     | uniq
     | sort
@@ -179,6 +207,7 @@ export def "repo scan" [] {
   print $"scanned ($rows | length) repos -> ($db)"
 }
 
+# fuzzy-pick a repo (optionally from a group) and cd into it
 export def --env rcd [group?: string] {
   let rows = (if ($group | is-empty) { repo ls } else { repo ls $group })
   let sel = ($rows | get path | to text | tv | str trim)
@@ -187,6 +216,7 @@ export def --env rcd [group?: string] {
   }
 }
 
+# list cached repos, filtered by manifest group or raw sql via --where
 export def "repo ls" [group?: string, --where (-w): string] {
   let db = (cache-db)
   if not ($db | path exists) {
@@ -202,20 +232,31 @@ export def "repo ls" [group?: string, --where (-w): string] {
   open $db | query db $"select * from repos where ($cond)"
 }
 
+# show manifest groups (name -> sql predicate)
 export def "repo groups" [] {
   open (manifest-path) | get groups
 }
 
-export def "repo doctor" [--add-remotes] {
+# report layout drift and missing pin remotes; canonical path is
+# <root>/<host>/<owner>/<name>, workspaces/worktrees get @<ref> suffix
+export def "repo doctor" [--add-remotes, --fix-layout] {
   let m = (open (manifest-path))
   let root = ($m.roots | get 0)
   let issues = (repo ls | each {|r|
     let layout = (if ($r.url | is-empty) {
       [{ path: $r.path, issue: "no-origin", fix: "" }]
     } else {
-      let expected = ($root | path join $r.url)
-      if $r.path == $expected { [] } else {
-        [{ path: $r.path, issue: "layout", fix: $"mv ($r.path) ($expected)" }]
+      let expected = (if $r.ws == 1 {
+        if ($r.ref | is-empty) { "" } else {
+          $root | path join $"($r.url)@($r.ref | str replace -a '/' '-')"
+        }
+      } else {
+        $root | path join $r.url
+      })
+      if ($expected | is-empty) or $r.path == $expected { [] } else if ($expected | path exists) {
+        [{ path: $r.path, issue: "layout-collision", fix: $"# ($expected) already exists" }]
+      } else {
+        [{ path: $r.path, issue: "layout", fix: $"mkdir -p '($expected | path dirname)' && mv '($r.path)' '($expected)'" }]
       }
     })
     let remote = (if ($r.pin_rev != "" and $r.pin_local == 0 and ($r.pin_url | is-not-empty) and $r.pin_url != $r.url) {
@@ -238,10 +279,21 @@ export def "repo doctor" [--add-remotes] {
     }
     print "remotes added; re-run `repo scan` then `repo pin-sync`"
   }
+  if $fix_layout {
+    $issues | where issue == "layout" | each {|i|
+      print $"applying: ($i.fix)"
+      let res = (do { sh -c $i.fix } | complete)
+      if $res.exit_code != 0 {
+        print $"  failed: ($res.stderr | str trim)"
+      }
+    }
+    print "layout fixed; re-run `repo scan`"
+  }
   print ($issues | group-by issue | transpose issue count | update count {|r| $r.count | length })
   $issues
 }
 
+# fetch flake-pinned revs where missing and mark them as cfg-pin bookmark/tag
 export def "repo pin-sync" [] {
   let rows = (repo ls --where "pin_rev != ''")
   $rows | each {|r|
