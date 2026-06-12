@@ -21,7 +21,7 @@ url = "gh:chojs23/concord"
 url = "gh:ipetkov/crane"
 
 [inputs.den]
-url = "gh:sini/den/688478b9d9597088beb28b0f39d55f7d31744a07"
+url = "gh:sini/den/feat/entity-gen-schema-port"
 
 [inputs.disko]
 url = "gh:nix-community/disko"

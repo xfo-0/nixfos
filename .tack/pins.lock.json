@@ -24,11 +24,11 @@
     "type": "github"
   },
   "den": {
-    "lastModified": 1781231607,
-    "narHash": "sha256-9kX7Ni7zm2E52+zWVrhxVgNOoEPjXUOAZb0BFKjipaA=",
+    "lastModified": 1781299000,
+    "narHash": "sha256-T7DG7NkbhpQJ15/CCs/1jwAvmCriGWeLphfmyDziJWA=",
     "owner": "sini",
     "repo": "den",
-    "rev": "688478b9d9597088beb28b0f39d55f7d31744a07",
+    "rev": "b1619a4784730ca09d10d4162325171d678864ee",
     "type": "github"
   },
   "disko": {
