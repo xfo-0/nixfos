@@ -1,7 +1,7 @@
 {
   roots: ["/home/xfo/Documents/git/nix"]
   pins_lock: "/etc/nixos/.tack/pins.lock.json"
-  include: ["/home/xfo/.config/repos/inputs.json"]
+  include: ["/home/xfo/.config/moor/inputs.json"]
   groups: {
     den: "tags like '%den%'"
     pinned: "pin_rev != ''"
@@ -15,7 +15,7 @@
     private: "private = 1"
   }
   repos: [
-    {url: "github.com/xfo-0/repos", tags: [cli, own], note: "repos cli upstream; extracted from modules/den/aspects/apps/cli/repos"}
+    {url: "github.com/xfo-0/moor", tags: [cli, own], note: "moor cli upstream; extracted from modules/den/aspects/apps/cli/moor"}
     {url: "github.com/vic/den", aliases: ["github.com/sini/den", "github.com/denful/den"], tags: [den, reference], note: "den framework upstream; we ride feat/entity-gen-schema-port (sini)"}
     {url: "github.com/vic/flake-file", aliases: ["github.com/denful/flake-file", "github.com/xfo-0/flake-file"], tags: [den, merged-fork-ref], note: "tack PR #120 merged 2026-06-11"}
     {url: "github.com/vic/with-inputs", aliases: ["github.com/denful/with-inputs", "github.com/xfo-0/with-inputs"], tags: [den, merged-fork-ref], note: "from.tack loader PR #14 merged 2026-06-11"}

@@ -27,7 +27,7 @@ in
         modules = [
           {
             options.clone = {
-              enable = lib.mkEnableOption "register a working clone of this input in the repos manifest";
+              enable = lib.mkEnableOption "register a working clone of this input in the moor manifest";
               tags = lib.mkOption {
                 type = lib.types.listOf lib.types.str;
                 default = [ ];
@@ -51,7 +51,7 @@ in
     );
   };
 
-  options.repo-clones.entries = lib.mkOption {
+  options.moor.clones = lib.mkOption {
     type = lib.types.listOf lib.types.raw;
     readOnly = true;
     default = lib.mapAttrsToList (input: inp: {
@@ -64,6 +64,6 @@ in
         ;
       inherit input;
     }) (lib.filterAttrs (_: inp: inp.clone.enable) config.flake-file.inputs);
-    defaultText = "repos manifest entries derived from flake-file.inputs.*.clone";
+    defaultText = "moor manifest entries derived from flake-file.inputs.*.clone";
   };
 }

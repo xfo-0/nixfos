@@ -1,9 +1,9 @@
 def manifest-path [] {
   let xdg = ($env.XDG_CONFIG_HOME? | default ($env.HOME | path join ".config"))
-  $env.REPOS_MANIFEST? | default (
-    [($xdg | path join "repos/manifest.nuon"), ($xdg | path join "repos/manifest.json")]
+  $env.MOOR_MANIFEST? | default (
+    [($xdg | path join "moor/manifest.nuon"), ($xdg | path join "moor/manifest.json")]
     | where {|p| $p | path exists }
-    | get 0? | default ($xdg | path join "repos/manifest.nuon")
+    | get 0? | default ($xdg | path join "moor/manifest.nuon")
   )
 }
 
@@ -40,7 +40,7 @@ def manifest-load [] {
 }
 
 def cache-db [] {
-  ($env.XDG_CACHE_HOME? | default ($env.HOME | path join ".cache")) | path join "repos.db"
+  ($env.XDG_CACHE_HOME? | default ($env.HOME | path join ".cache")) | path join "moor.db"
 }
 
 def normalize-url [raw: string] {
@@ -107,7 +107,7 @@ def repo-origin [p: string] {
 }
 
 def gh-cache-path [] {
-  ($env.XDG_CACHE_HOME? | default ($env.HOME | path join ".cache")) | path join "repos-gh.nuon"
+  ($env.XDG_CACHE_HOME? | default ($env.HOME | path join ".cache")) | path join "moor-gh.nuon"
 }
 
 def gh-cache [] {
@@ -115,13 +115,13 @@ def gh-cache [] {
   if ($p | path exists) { open $p } else { { starred: [], lists: [] } }
 }
 
-# overview of repo subcommands
-export def repo [] {
-  scope commands | where name =~ '^repo ' | select name description
+# overview of moor subcommands
+export def main [] {
+  scope commands | where name =~ '^moor ' | select name description
 }
 
-# sync GitHub starred repos and lists into local cache (used by `repo scan`)
-export def "repo gh-sync" [] {
+# sync GitHub starred repos and lists into local cache (used by `moor scan`)
+export def "moor gh-sync" [] {
   let starred = (gh api user/starred --paginate --jq ".[].full_name" | lines | each {|s| $"github.com/($s)" })
   let res = (do { gh api graphql -f query="{ viewer { lists(first: 50) { nodes { name items(first: 100) { nodes { ... on Repository { nameWithOwner } } } } } } }" } | complete)
   let lists = (if $res.exit_code == 0 {
@@ -239,7 +239,7 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
 }
 
 # scan manifest roots for git/jj repos and rebuild the cache db
-export def "repo scan" [] {
+export def "moor scan" [] {
   let m = (manifest-load)
   let curated = ($m.repos? | default [])
   let pins = (pin-map)
@@ -289,8 +289,8 @@ export def "repo scan" [] {
 }
 
 # fuzzy-pick a repo (optionally from a group) and cd into it
-export def --env rcd [group?: string] {
-  let rows = (if ($group | is-empty) { repo ls } else { repo ls $group })
+export def --env mcd [group?: string] {
+  let rows = (if ($group | is-empty) { moor ls } else { moor ls $group })
   let sel = ($rows | get path | to text | tv | str trim)
   if ($sel | is-not-empty) {
     cd $sel
@@ -298,10 +298,10 @@ export def --env rcd [group?: string] {
 }
 
 # list cached repos, filtered by manifest group or raw sql via --where
-export def "repo ls" [group?: string, --where (-w): string] {
+export def "moor ls" [group?: string, --where (-w): string] {
   let db = (cache-db)
   if not ($db | path exists) {
-    error make { msg: "no cache, run `repo scan` first" }
+    error make { msg: "no cache, run `moor scan` first" }
   }
   let cond = (if ($where | is-not-empty) {
     $where
@@ -315,10 +315,10 @@ export def "repo ls" [group?: string, --where (-w): string] {
 
 # verify pinned revs against lock narHash; seed the nix store from local clones
 # so locked inputs resolve offline without remote fetches (--check: verify only)
-export def "repo pin-seed" [--check] {
+export def "moor pin-seed" [--check] {
   let db = (cache-db)
   if not ($db | path exists) {
-    error make { msg: "no cache, run `repo scan` first" }
+    error make { msg: "no cache, run `moor scan` first" }
   }
   let rows = (open $db
     | query db "select p.path, p.input, p.rev, p.nar_hash, b.name from pins p join repos_base b on p.path = b.path where p.local = 1 order by p.input")
@@ -362,16 +362,16 @@ export def "repo pin-seed" [--check] {
 }
 
 # list pin rows: one per flake input matched to a local clone
-export def "repo pins" [] {
+export def "moor pins" [] {
   let db = (cache-db)
   if not ($db | path exists) {
-    error make { msg: "no cache, run `repo scan` first" }
+    error make { msg: "no cache, run `moor scan` first" }
   }
   open $db | query db "select p.input, b.name, p.rev, p.local, p.behind, p.path from pins p join repos_base b on p.path = b.path order by p.input"
 }
 
 # show manifest groups (name -> sql predicate)
-export def "repo groups" [] {
+export def "moor groups" [] {
   manifest-load | get groups
 }
 
@@ -388,7 +388,7 @@ def ws-backing [p: string, vcs: string] {
 def resolve-repo [q: string] {
   let db = (cache-db)
   if not ($db | path exists) {
-    error make { msg: "no cache, run `repo scan` first" }
+    error make { msg: "no cache, run `moor scan` first" }
   }
   let rows = (open $db | query db $"select * from repos_base where ws = 0 and \(name = '($q)' or url like '%($q)%' or path like '%($q)%'\)")
   if ($rows | length) == 1 {
@@ -401,7 +401,7 @@ def resolve-repo [q: string] {
 }
 
 # add a jj workspace for a repo at <root>/<host>/<owner>/<name>@<ws-name>
-export def "repo ws add" [query: string, name: string] {
+export def "moor ws add" [query: string, name: string] {
   let r = (resolve-repo $query)
   if $r.vcs != "jj" {
     error make { msg: $"($r.path) is not jj-managed; git worktrees not supported yet" }
@@ -413,11 +413,11 @@ export def "repo ws add" [query: string, name: string] {
   }
   mkdir ($dest | path dirname)
   jj -R $r.path workspace add --name $name $dest
-  print $"workspace ($name): ($dest)  re-run `repo scan`"
+  print $"workspace ($name): ($dest)  re-run `moor scan`"
 }
 
 # forget a jj workspace and delete its directory; refuses if it has changes
-export def "repo ws rm" [path: string] {
+export def "moor ws rm" [path: string] {
   let p = ($path | path expand)
   let repof = ($p | path join ".jj/repo")
   if (($repof | path type) != "file") {
@@ -431,15 +431,15 @@ export def "repo ws rm" [path: string] {
   let name = ($p | path basename | split row "@" | last)
   jj -R $primary workspace forget $name
   rm -rf $p
-  print $"removed workspace ($name) at ($p)  re-run `repo scan`"
+  print $"removed workspace ($name) at ($p)  re-run `moor scan`"
 }
 
 # report layout drift and missing pin remotes; canonical path is
 # <root>/<host>/<owner>/<name>, workspaces/worktrees get @<ref> suffix
-export def "repo doctor" [--add-remotes, --fix-layout] {
+export def "moor doctor" [--add-remotes, --fix-layout] {
   let m = (manifest-load)
   let root = ($m.roots | get 0)
-  let issues = (repo ls | each {|r|
+  let issues = (moor ls | each {|r|
     let orphan = (if $r.ws == 1 {
       let target = (ws-backing $r.path $r.vcs)
       if ($target | path exists) { [] } else {
@@ -490,7 +490,7 @@ export def "repo doctor" [--add-remotes, --fix-layout] {
       print $"applying: ($i.fix)"
       do { sh -c $i.fix } | complete | ignore
     }
-    print "remotes added; re-run `repo scan` then `repo pin-sync`"
+    print "remotes added; re-run `moor scan` then `moor pin-sync`"
   }
   if $fix_layout {
     $issues | where issue == "layout" | each {|i|
@@ -500,14 +500,14 @@ export def "repo doctor" [--add-remotes, --fix-layout] {
         print $"  failed: ($res.stderr | str trim)"
       }
     }
-    print "layout fixed; re-run `repo scan`"
+    print "layout fixed; re-run `moor scan`"
   }
   print ($issues | group-by issue | transpose issue count | update count {|r| $r.count | length })
   $issues
 }
 
 # fetch flake-pinned revs where missing and mark them as cfg-pin bookmark/tag
-export def "repo pin-sync" [] {
+export def "moor pin-sync" [] {
   let rows = (open (cache-db)
     | query db "select p.path, p.input, p.rev, b.vcs, b.name, (select count(*) from pins q where q.path = p.path) as npins from pins p join repos_base b on p.path = b.path order by p.input")
   $rows | each {|r|

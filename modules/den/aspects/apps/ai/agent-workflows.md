@@ -15,7 +15,7 @@
 - VCS selection: if `.jj/` exists, the repo is jj-managed — use jj for all history operations. Never run raw `git commit`/`git checkout`/`git switch` in a jj repo; they detach HEAD and lose jj's auto-snapshots. Fall back to plain git only when the repo is not jj-managed.
 - `@` is the working-copy commit and auto-snapshots every edit. Shape history with `jj describe`/`squash`/`new`/`bookmark set`; isolate a file from a mixed working copy with `jj split <paths>`; recover with `jj op log`/`jj op restore`.
 - Prefer a dedicated jj bookmark for nontrivial changes.
-- For concurrent or long-running work, isolate into a jj workspace via `repo ws add <repo> <name>` (nushell; own working-copy `@` at `<root>/<host>/<owner>/<name>@<ws>`); clean up with `repo ws rm <path>` after merge, then re-run `repo scan`.
+- For concurrent or long-running work, isolate into a jj workspace via `moor ws add <repo> <name>` (nushell; own working-copy `@` at `<root>/<host>/<owner>/<name>@<ws>`); clean up with `moor ws rm <path>` after merge, then re-run `moor scan`.
 - Inspect repo state before edits with `jj status`, `jj log`, and `jj bookmark list`.
 - Delete or forget task bookmarks after their changes are merged.
 - A floating `private: agent context` commit above `main` holds repo-local agent files (den-guidelines.md, docs/, .claude/, .opencode/). NEVER squash these paths into publishable commits — always pass explicit paths to `jj squash`, route private-file edits into the `private:` commit, and push via `jjp` (path-guarded) instead of raw `jj git push`.

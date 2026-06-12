@@ -31,7 +31,7 @@
       git
       jj
       rbw
-      repos
+      moor
     ];
   };
 }
