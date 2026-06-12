@@ -303,9 +303,6 @@ export def "moor scan" [] {
       from pins group by path
     ) g on b.path = g.path
   " | ignore
-  if (which zoxide | is-not-empty) {
-    zoxide add ...($rows | get path)
-  }
   print $"scanned ($rows | length) repos, ($pin_rows | length) pins -> ($db)"
 }
 
