@@ -1,6 +1,7 @@
 {
   roots: ["/home/xfo/Documents/git/nix"]
   pins_lock: "/etc/nixos/.tack/pins.lock.json"
+  include: ["/home/xfo/.config/repos/inputs.json"]
   groups: {
     den: "tags like '%den%'"
     pinned: "pin_rev != ''"

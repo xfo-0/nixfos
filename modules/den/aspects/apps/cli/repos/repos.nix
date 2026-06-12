@@ -1,13 +1,20 @@
-{ den, ... }:
+{ den, config, ... }:
+let
+  cloneEntries = config.repo-clones.entries;
+in
 {
   den.aspects.repos = {
     homeManager =
       { config, ... }:
       {
         xdg.configFile."nushell/repos.nu".source = ./repos.nu;
-        programs.nushell.extraConfig = ''
-          use ${config.xdg.configHome}/nushell/repos.nu *
-        '';
+        xdg.configFile."repos/inputs.json".text = builtins.toJSON { repos = cloneEntries; };
+        programs.nushell = {
+          extraConfig = ''
+            use ${config.xdg.configHome}/nushell/repos.nu *
+          '';
+          environmentVariables.REPOS_MANIFEST = "/etc/nixos/repos.nuon";
+        };
 
         xdg.configFile."television/cable/repos.toml".text = ''
           [metadata]

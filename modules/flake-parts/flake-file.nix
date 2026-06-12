@@ -13,10 +13,23 @@
     inputs = {
       flake-file.url = "gh:denful/flake-file";
       nixpkgs.url = "gh:NixOS/nixpkgs/nixos-unstable";
-      tack.url = "gh:manic-systems/tack";
+      tack = {
+        url = "gh:manic-systems/tack";
+        clone = {
+          enable = true;
+          tags = [ "den" "infra" ];
+        };
+      };
       flake-parts.url = "gh:hercules-ci/flake-parts";
       pkgs-by-name-for-flake-parts.url = "gh:drupol/pkgs-by-name-for-flake-parts";
-      import-tree.url = "gh:denful/import-tree";
+      import-tree = {
+        url = "gh:denful/import-tree";
+        clone = {
+          enable = true;
+          tags = [ "den" ];
+          aliases = [ "github.com/vic/import-tree" ];
+        };
+      };
       den.url = "gh:sini/den/688478b9d9597088beb28b0f39d55f7d31744a07";
       nh.url = "gh:xfo-0/nh/b7bd1a7d9a6ecd7bf348d4cde63102e93c29a44f";
       gen-algebra.url = "gh:sini/gen-algebra/49f6721bd314b38272bd6b1b26139569365c85a6";

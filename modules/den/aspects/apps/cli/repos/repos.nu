@@ -1,7 +1,23 @@
-const MANIFEST_DEFAULT = "/etc/nixos/repos.nuon"
-
 def manifest-path [] {
-  $env.REPOS_MANIFEST? | default $MANIFEST_DEFAULT
+  let xdg = ($env.XDG_CONFIG_HOME? | default ($env.HOME | path join ".config"))
+  $env.REPOS_MANIFEST? | default (
+    [($xdg | path join "repos/manifest.nuon"), ($xdg | path join "repos/manifest.json")]
+    | where {|p| $p | path exists }
+    | get 0? | default ($xdg | path join "repos/manifest.nuon")
+  )
+}
+
+def manifest-load [] {
+  let main = (open (manifest-path))
+  ($main.include? | default [])
+  | where {|p| $p | path exists }
+  | reduce -f $main {|p, acc|
+      let m = (open $p)
+      $acc
+      | upsert roots ((($acc.roots? | default []) ++ ($m.roots? | default [])) | uniq)
+      | upsert groups (($acc.groups? | default {}) | merge ($m.groups? | default {}))
+      | upsert repos (($acc.repos? | default []) ++ ($m.repos? | default []))
+    }
 }
 
 def cache-db [] {
@@ -26,13 +42,23 @@ def url-parts [url: string] {
 }
 
 def pin-map [] {
-  let m = (open (manifest-path))
-  let lockp = ($m.pins_lock? | default "/etc/nixos/.tack/pins.lock.json")
-  if not ($lockp | path exists) {
+  let m = (manifest-load)
+  let lockp = ($m.pins_lock? | default "")
+  if ($lockp | is-empty) or (not ($lockp | path exists)) {
     return []
   }
-  open $lockp
-  | transpose input meta
+  let raw = (open $lockp)
+  let lock = (if (($raw | describe) == "string") { $raw | from json } else { $raw })
+  let entries = (if ($lock.nodes? | describe | str starts-with "record") {
+    let root = ($lock.root? | default "root")
+    $lock.nodes
+    | transpose input meta
+    | where {|r| $r.input != $root and (($r.meta.locked? | describe) | str starts-with "record") }
+    | each {|r| { input: $r.input, meta: $r.meta.locked } }
+  } else {
+    $lock | transpose input meta
+  })
+  $entries
   | where {|r| ($r.meta | describe | str starts-with "record") and ($r.meta.rev? | is-not-empty) }
   | each {|r|
       let url = (if ($r.meta.type? == "github") {
@@ -42,7 +68,7 @@ def pin-map [] {
       } else {
         ""
       })
-      { url: $url, input: $r.input, rev: $r.meta.rev }
+      { url: $url, input: $r.input, rev: $r.meta.rev, nar_hash: ($r.meta.narHash? | default "") }
     }
   | where url != ""
 }
@@ -100,12 +126,12 @@ def repo-dirty [p: string, vcs: string] {
   }
 }
 
-def pin-behind [p: string, vcs: string] {
+def pin-behind [p: string, vcs: string, rev: string] {
   if $vcs == "jj" {
-    let r = (do { jj -R $p --ignore-working-copy log -r "cfg-pin..trunk()" --no-graph -T '"1\n"' } | complete)
+    let r = (do { jj -R $p --ignore-working-copy log -r ($rev + "..trunk()") --no-graph -T '"1\n"' } | complete)
     if $r.exit_code == 0 { $r.stdout | lines | length } else { -1 }
   } else {
-    let r = (do { git -C $p rev-list --count "cfg-pin..origin/HEAD" } | complete)
+    let r = (do { git -C $p rev-list --count $"($rev)..origin/HEAD" } | complete)
     if $r.exit_code == 0 { $r.stdout | str trim | into int } else { -1 }
   }
 }
@@ -138,7 +164,7 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
   let parts = (url-parts $url)
   let cur = ($curated | where {|c| $c.url == $url or ($url in ($c.aliases? | default [])) })
   let ids = (if ($cur | is-empty) { [$url] } else { [$cur.0.url] ++ ($cur.0.aliases? | default []) })
-  let pin = ($pins | where {|pn| $pn.url in $ids })
+  let matched = ($pins | where {|pn| $pn.url in $ids })
   let tk = (do { tokei $p --output json } | complete)
   let langs = (if $tk.exit_code == 0 {
     $tk.stdout
@@ -152,40 +178,49 @@ def scan-one [p: string, curated: list, pins: list, gh: record] {
   } else {
     ""
   })
-  let pin_rev = (if ($pin | is-empty) { "" } else { $pin.0.rev })
   let vcs = (if ($p | path join ".jj" | path exists) { "jj" } else { "git" })
   let ws = (if $vcs == "jj" {
     if (($p | path join ".jj/repo" | path type) == "file") { 1 } else { 0 }
   } else {
     if (($p | path join ".git" | path type) == "file") { 1 } else { 0 }
   })
+  let pin_rows = ($matched | each {|pn|
+      let local = (rev-exists $p $pn.rev)
+      {
+        path: $p
+        input: $pn.input
+        url: $pn.url
+        rev: $pn.rev
+        nar_hash: $pn.nar_hash
+        local: (if $local { 1 } else { 0 })
+        behind: (if $local { pin-behind $p $vcs $pn.rev } else { -1 })
+      }
+    })
   {
-    path: $p
-    url: $url
-    host: $parts.host
-    owner: $parts.owner
-    name: $parts.name
-    vcs: $vcs
-    ws: $ws
-    ref: (repo-ref $p $vcs)
-    flake: (if ($p | path join "flake.nix" | path exists) { 1 } else { 0 })
-    langs: $langs
-    dirty: (repo-dirty $p $vcs)
-    tags: (if ($cur | is-empty) { "" } else { $cur.0.tags | str join "," })
-    note: (if ($cur | is-empty) { "" } else { $cur.0.note? | default "" })
-    pin_input: (if ($pin | is-empty) { "" } else { $pin.0.input })
-    pin_url: (if ($pin | is-empty) { "" } else { $pin.0.url })
-    pin_rev: $pin_rev
-    pin_local: (if ($pin_rev == "") { 0 } else { if (rev-exists $p $pin_rev) { 1 } else { 0 } })
-    pin_behind: (if ($pin_rev == "") { -1 } else { pin-behind $p $vcs })
-    starred: (if ($url in $gh.starred) { 1 } else { 0 })
-    gh_lists: ($gh.lists | where {|l| $url in $l.repos } | get name | str join ",")
+    repo: {
+      path: $p
+      url: $url
+      host: $parts.host
+      owner: $parts.owner
+      name: $parts.name
+      vcs: $vcs
+      ws: $ws
+      ref: (repo-ref $p $vcs)
+      flake: (if ($p | path join "flake.nix" | path exists) { 1 } else { 0 })
+      langs: $langs
+      dirty: (repo-dirty $p $vcs)
+      tags: (if ($cur | is-empty) { "" } else { $cur.0.tags | str join "," })
+      note: (if ($cur | is-empty) { "" } else { $cur.0.note? | default "" })
+      starred: (if ($url in $gh.starred) { 1 } else { 0 })
+      gh_lists: ($gh.lists | where {|l| $url in $l.repos } | get name | str join ",")
+    }
+    pins: $pin_rows
   }
 }
 
 # scan manifest roots for git/jj repos and rebuild the cache db
 export def "repo scan" [] {
-  let m = (open (manifest-path))
+  let m = (manifest-load)
   let curated = ($m.repos? | default [])
   let pins = (pin-map)
   let dirs = ($m.roots
@@ -197,14 +232,40 @@ export def "repo scan" [] {
         if (($acc | is-not-empty) and ($d | str starts-with (($acc | last) + "/"))) { $acc } else { $acc ++ [$d] }
       })
   let gh = (gh-cache)
-  let rows = ($dirs | par-each {|p| scan-one $p $curated $pins $gh } | sort-by path)
+  let results = ($dirs | par-each {|p| scan-one $p $curated $pins $gh })
+  let rows = ($results | get repo | sort-by path)
+  let pin_rows = ($results | get pins | flatten)
   let db = (cache-db)
   rm -f $db
-  $rows | into sqlite $db -t repos
+  $rows | into sqlite $db -t repos_base
+  if ($pin_rows | is-not-empty) {
+    $pin_rows | into sqlite $db -t pins
+  } else {
+    open $db | query db "create table pins (path text, input text, url text, rev text, nar_hash text, local int, behind int)" | ignore
+  }
+  open $db | query db "
+    create view repos as
+    select b.*,
+      coalesce(g.pin_input, '') as pin_input,
+      coalesce(g.pin_url, '') as pin_url,
+      coalesce(g.pin_rev, '') as pin_rev,
+      coalesce(g.pin_local, 0) as pin_local,
+      coalesce(g.pin_behind, -1) as pin_behind
+    from repos_base b
+    left join (
+      select path,
+        group_concat(input, ',') as pin_input,
+        group_concat(distinct url) as pin_url,
+        group_concat(rev, ',') as pin_rev,
+        min(local) as pin_local,
+        max(behind) as pin_behind
+      from pins group by path
+    ) g on b.path = g.path
+  " | ignore
   if (which zoxide | is-not-empty) {
     zoxide add ...($rows | get path)
   }
-  print $"scanned ($rows | length) repos -> ($db)"
+  print $"scanned ($rows | length) repos, ($pin_rows | length) pins -> ($db)"
 }
 
 # fuzzy-pick a repo (optionally from a group) and cd into it
@@ -225,22 +286,79 @@ export def "repo ls" [group?: string, --where (-w): string] {
   let cond = (if ($where | is-not-empty) {
     $where
   } else if ($group | is-not-empty) {
-    open (manifest-path) | get groups | get $group
+    manifest-load | get groups | get $group
   } else {
     "1=1"
   })
   open $db | query db $"select * from repos where ($cond)"
 }
 
+# verify pinned revs against lock narHash; seed the nix store from local clones
+# so locked inputs resolve offline without remote fetches (--check: verify only)
+export def "repo pin-seed" [--check] {
+  let db = (cache-db)
+  if not ($db | path exists) {
+    error make { msg: "no cache, run `repo scan` first" }
+  }
+  let rows = (open $db
+    | query db "select p.path, p.input, p.rev, p.nar_hash, b.name from pins p join repos_base b on p.path = b.path where p.local = 1 order by p.input")
+  $rows | each {|r|
+    let status = (if ($r.nar_hash | is-empty) {
+      "no-narhash"
+    } else {
+      let tmp = (mktemp -d)
+      let tar = ($tmp | path join "src.tar")
+      let out = ($tmp | path join "source")
+      mkdir $out
+      let gd = (if (($r.path | path join ".git") | path exists) {
+        $r.path | path join ".git"
+      } else {
+        $r.path | path join ".jj/repo/store/git"
+      })
+      let ar = (do { git --git-dir $gd archive -o $tar $r.rev } | complete)
+      let status = (if $ar.exit_code != 0 {
+        $"archive-failed: ($ar.stderr | str trim)"
+      } else {
+        ^tar -xf $tar -C $out
+        let h = (nix hash path $out | str trim)
+        if $h != $r.nar_hash {
+          $"mismatch: local ($h)"
+        } else if $check {
+          "verified"
+        } else {
+          let add = (do { nix store add --name source $out } | complete)
+          if $add.exit_code == 0 {
+            $"seeded: ($add.stdout | str trim)"
+          } else {
+            $"add-failed: ($add.stderr | str trim)"
+          }
+        }
+      })
+      rm -rf $tmp
+      $status
+    })
+    { input: $r.input, name: $r.name, rev: ($r.rev | str substring 0..7), status: $status }
+  }
+}
+
+# list pin rows: one per flake input matched to a local clone
+export def "repo pins" [] {
+  let db = (cache-db)
+  if not ($db | path exists) {
+    error make { msg: "no cache, run `repo scan` first" }
+  }
+  open $db | query db "select p.input, b.name, p.rev, p.local, p.behind, p.path from pins p join repos_base b on p.path = b.path order by p.input"
+}
+
 # show manifest groups (name -> sql predicate)
 export def "repo groups" [] {
-  open (manifest-path) | get groups
+  manifest-load | get groups
 }
 
 # report layout drift and missing pin remotes; canonical path is
 # <root>/<host>/<owner>/<name>, workspaces/worktrees get @<ref> suffix
 export def "repo doctor" [--add-remotes, --fix-layout] {
-  let m = (open (manifest-path))
+  let m = (manifest-load)
   let root = ($m.roots | get 0)
   let issues = (repo ls | each {|r|
     let layout = (if ($r.url | is-empty) {
@@ -259,19 +377,20 @@ export def "repo doctor" [--add-remotes, --fix-layout] {
         [{ path: $r.path, issue: "layout", fix: $"mkdir -p '($expected | path dirname)' && mv '($r.path)' '($expected)'" }]
       }
     })
-    let remote = (if ($r.pin_rev != "" and $r.pin_local == 0 and ($r.pin_url | is-not-empty) and $r.pin_url != $r.url) {
-      let owner = ($r.pin_url | split row "/" | get 1)
-      let cmd = (if $r.vcs == "jj" {
-        $"jj -R ($r.path) git remote add ($owner) https://($r.pin_url)"
-      } else {
-        $"git -C ($r.path) remote add ($owner) https://($r.pin_url)"
-      })
-      [{ path: $r.path, issue: "pin-remote-missing", fix: $cmd }]
-    } else {
-      []
-    })
-    $layout ++ $remote
+    $layout
   } | flatten)
+  let remotes = (open (cache-db)
+    | query db "select p.path, p.url as pin_url, b.url, b.vcs from pins p join repos_base b on p.path = b.path where p.local = 0 and p.url != '' and p.url != b.url"
+    | each {|r|
+        let owner = ($r.pin_url | split row "/" | get 1)
+        let cmd = (if $r.vcs == "jj" {
+          $"jj -R ($r.path) git remote add ($owner) https://($r.pin_url)"
+        } else {
+          $"git -C ($r.path) remote add ($owner) https://($r.pin_url)"
+        })
+        { path: $r.path, issue: "pin-remote-missing", fix: $cmd }
+      })
+  let issues = ($issues ++ $remotes)
   if $add_remotes {
     $issues | where issue == "pin-remote-missing" | each {|i|
       print $"applying: ($i.fix)"
@@ -295,9 +414,10 @@ export def "repo doctor" [--add-remotes, --fix-layout] {
 
 # fetch flake-pinned revs where missing and mark them as cfg-pin bookmark/tag
 export def "repo pin-sync" [] {
-  let rows = (repo ls --where "pin_rev != ''")
+  let rows = (open (cache-db)
+    | query db "select p.path, p.input, p.rev, b.vcs, b.name, (select count(*) from pins q where q.path = p.path) as npins from pins p join repos_base b on p.path = b.path order by p.input")
   $rows | each {|r|
-    let had = (rev-exists $r.path $r.pin_rev)
+    let had = (rev-exists $r.path $r.rev)
     if not $had {
       if $r.vcs == "jj" {
         do { jj -R $r.path git fetch --all-remotes } | complete | ignore
@@ -305,38 +425,39 @@ export def "repo pin-sync" [] {
         do { git -C $r.path fetch --all --quiet } | complete | ignore
       }
     }
-    let ok = (rev-exists $r.path $r.pin_rev)
+    let ok = (rev-exists $r.path $r.rev)
     let ok = (if $ok {
       true
     } else if ($r.path | path join ".git" | path exists) {
       git -C $r.path remote | lines | each {|rm|
-        do { git -C $r.path fetch $rm $r.pin_rev } | complete | ignore
+        do { git -C $r.path fetch $rm $r.rev } | complete | ignore
       }
-      rev-exists $r.path $r.pin_rev
+      rev-exists $r.path $r.rev
     } else {
       false
     })
+    let mark = (if $r.npins > 1 { $"cfg-pin-($r.input)" } else { "cfg-pin" })
     let status = (if not $ok {
       "rev-unavailable"
     } else if $r.vcs == "jj" {
-      let res = (do { jj -R $r.path --ignore-working-copy bookmark set cfg-pin -r $r.pin_rev --allow-backwards } | complete)
+      let res = (do { jj -R $r.path --ignore-working-copy bookmark set $mark -r $r.rev --allow-backwards } | complete)
       if $res.exit_code == 0 {
         "bookmarked"
       } else if ($r.path | path join ".git" | path exists) {
-        let ref = (do { git -C $r.path update-ref refs/heads/cfg-pin $r.pin_rev } | complete)
+        let ref = (do { git -C $r.path update-ref $"refs/heads/($mark)" $r.rev } | complete)
         if $ref.exit_code == 0 { "bookmarked (git-ref)" } else { $"error: ($res.stderr | str trim)" }
       } else {
         $"error: ($res.stderr | str trim)"
       }
     } else {
-      let res = (do { git -C $r.path tag -f cfg-pin $r.pin_rev } | complete)
+      let res = (do { git -C $r.path tag -f $mark $r.rev } | complete)
       if $res.exit_code == 0 { "tagged" } else { $"error: ($res.stderr | str trim)" }
     })
     {
-      input: $r.pin_input
+      input: $r.input
       name: $r.name
       path: $r.path
-      rev: ($r.pin_rev | str substring 0..7)
+      rev: ($r.rev | str substring 0..7)
       fetched: (not $had)
       status: $status
     }
