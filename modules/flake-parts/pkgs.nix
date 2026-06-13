@@ -19,8 +19,6 @@ in
 
   perSystem.pkgsDirectory = ./_pkgs/by-name;
 
-  flake.overlays.default = localPackagesOverlay;
-
   den.aspects.pkgs-cfg.nixos.nixpkgs.overlays = [
     localPackagesOverlay
 
