@@ -16,7 +16,8 @@
     dirty: "dirty = 1",
     behind: "pin_behind > 0",
     starred: "starred = 1",
-    private: "private = 1"
+    private: "private = 1",
+    local: "host = \"local\""
   },
   repos: [
     [  url,  aliases,  tags,  note];
