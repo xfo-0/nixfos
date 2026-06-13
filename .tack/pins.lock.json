@@ -136,10 +136,10 @@
     "type": "github"
   },
   "moor": {
-    "lastModified": 1781309117,
-    "narHash": "sha256-/pBmMUkbhlw4avLgJaeKOP9n3TSHK7865QRBJ98T9VM=",
+    "lastModified": 1781314237,
+    "narHash": "sha256-1qqwTKllwoOmRS5zsVvgr+os8PS8T/PVDBcZPxwNnnA=",
     "ref": "refs/heads/main",
-    "rev": "86f303013455ca5ead1bad3cbf0fb4b403ec26e9",
+    "rev": "ed2d9d786f8ca4703f1f20aadd50e4c5b1c052ad",
     "type": "git",
     "url": "ssh://git@github.com/xfo-0/moor"
   },
