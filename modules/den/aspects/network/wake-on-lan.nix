@@ -1,17 +1,10 @@
-{ lib, den, ... }:
-let
-  inherit (den.lib.policy) pipe;
-in
+{ lib, den, collectors, ... }:
 {
-  den.quirks.wake-targets.description = "Records describing how to wake a host via WoL: { name; ip; mac } per host running network.wake-on-lan with a MAC declared.";
+  den.quirks.wake-targets.desc = "Records describing how to wake a host via WoL: { name; ip; mac } per host running network.wake-on-lan with a MAC declared.";
 
-  den.policies.wake-targets-collect = _: [
-    (pipe.from "wake-targets" [
-      (pipe.collect ({ host, ... }: true))
-    ])
-  ];
+  den.policies.collect-wake-targets = collectors.collectAllHosts "wake-targets";
 
-  den.schema.host.includes = [ den.policies.wake-targets-collect ];
+  den.schema.host.includes = [ den.policies.collect-wake-targets ];
 
   den.aspects.wake-on-lan = {
     settings = {
