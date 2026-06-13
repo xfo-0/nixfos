@@ -62,7 +62,8 @@
           };
         };
 
-        networking.firewall.allowedTCPPorts = lib.optional (cfg.openFirewall or false) (cfg.port or 5000);
+        networking.firewall.interfaces.tailscale0.allowedTCPPorts = lib.optional (cfg.openFirewall or false
+        ) (cfg.port or 5000);
       };
   };
 
