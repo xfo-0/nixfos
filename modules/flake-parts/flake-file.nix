@@ -29,12 +29,23 @@
           tags = [ "den" ];
         };
       };
-      den.url = "gh:sini/den/688478b9d9597088beb28b0f39d55f7d31744a07";
+      den.url = "gh:sini/den/feat/entity-gen-schema-port";
       nh.url = "gh:xfo-0/nh/b7bd1a7d9a6ecd7bf348d4cde63102e93c29a44f";
       gen-algebra.url = "gh:sini/gen-algebra/49f6721bd314b38272bd6b1b26139569365c85a6";
       gen-schema.url = "gh:sini/gen-schema/c072f76be4164a854312b892867c2d007891575a";
       scope-engine.url = "gh:sini/scope-engine/7e301a5b0372a554ad1f57b080a9a8918f483ff8";
       home-manager.url = "gh:nix-community/home-manager";
+      moor = {
+        url = "git+ssh://git@github.com/xfo-0/moor";
+        clone = {
+          enable = true;
+          tags = [
+            "cli"
+            "own"
+          ];
+          note = "moor cli upstream";
+        };
+      };
     };
   };
 

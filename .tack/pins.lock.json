@@ -135,6 +135,14 @@
     "rev": "c47e75b800f7ea1cba2a1831c60830fb32a0b4ce",
     "type": "github"
   },
+  "moor": {
+    "lastModified": 1781309117,
+    "narHash": "sha256-/pBmMUkbhlw4avLgJaeKOP9n3TSHK7865QRBJ98T9VM=",
+    "ref": "refs/heads/main",
+    "rev": "86f303013455ca5ead1bad3cbf0fb4b403ec26e9",
+    "type": "git",
+    "url": "ssh://git@github.com/xfo-0/moor"
+  },
   "ncro": {
     "lastModified": 1780984256,
     "narHash": "sha256-POz3sWFFCYnwp79EMnal0I9487Q/ir+hPrswfGamExw=",

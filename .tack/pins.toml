@@ -65,6 +65,9 @@ url = "gh:numtide/llm-agents.nix"
 url = "gh:Mellbourn/lsColorsToToml"
 type = "fetch"
 
+[inputs.moor]
+url = "git+ssh://git@github.com/xfo-0/moor"
+
 [inputs.ncro]
 url = "gh:manic-systems/ncro"
 
