@@ -331,9 +331,14 @@ export def "moor ls" [group?: string, --where (-w): string] {
   open $db | query db $"select * from repos where ($cond)"
 }
 
+def gcroots-dir [] {
+  ($env.XDG_STATE_HOME? | default ($env.HOME | path join ".local/state")) | path join "moor/gcroots"
+}
+
 # verify pinned revs against lock narHash; seed the nix store from local clones
-# so locked inputs resolve offline without remote fetches (--check: verify only)
-export def "moor pin-seed" [--check] {
+# so locked inputs resolve offline without remote fetches (--check: verify only;
+# --root: register gc roots so seeds survive nix-collect-garbage)
+export def "moor pin-seed" [--check, --root] {
   let db = (cache-db)
   if not ($db | path exists) {
     error make { msg: "no cache, run `moor scan` first" }
@@ -366,7 +371,14 @@ export def "moor pin-seed" [--check] {
         } else {
           let add = (do { nix store add --name source $out } | complete)
           if $add.exit_code == 0 {
-            $"seeded: ($add.stdout | str trim)"
+            let sp = ($add.stdout | str trim)
+            if $root {
+              mkdir (gcroots-dir)
+              do { nix-store --realise $sp --add-root ((gcroots-dir) | path join $r.input) } | complete | ignore
+              $"seeded+rooted: ($sp)"
+            } else {
+              $"seeded: ($sp)"
+            }
           } else {
             $"add-failed: ($add.stderr | str trim)"
           }
@@ -377,6 +389,26 @@ export def "moor pin-seed" [--check] {
     })
     { input: $r.input, name: $r.name, rev: ($r.rev | str substring 0..7), status: $status }
   }
+}
+
+# prune pin-seed gc roots whose input left the pin set; --all also wipes caches
+export def "moor clean" [--all] {
+  let gcd = (gcroots-dir)
+  let inputs = (if ((cache-db) | path exists) {
+    open (cache-db) | query db "select distinct input from pins" | get input
+  } else {
+    []
+  })
+  let removed = (if ($gcd | path exists) {
+    ls $gcd | get name | where {|l| ($l | path basename) not-in $inputs } | each {|l| rm $l; $l }
+  } else {
+    []
+  })
+  if $all {
+    rm -f (cache-db) (gh-cache-path)
+  }
+  print $"removed ($removed | length) stale gc roots(if $all { ', caches cleared' } else { '' })"
+  $removed
 }
 
 # list pin rows: one per flake input matched to a local clone
