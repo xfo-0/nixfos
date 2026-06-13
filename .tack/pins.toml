@@ -84,11 +84,7 @@ url = "gh:DeterminateSystems/nix-src"
 url = "gh:NixOS/nixpkgs/nixos-unstable"
 
 [inputs.noctalia]
-url = "gh:noctalia-dev/noctalia-shell/2461f871a602f9a5688b5b01dc19c6309dd0d519"
-follows = { noctalia-qs = "noctalia-qs" }
-
-[inputs.noctalia-qs]
-url = "gh:noctalia-dev/noctalia-qs/07398e12b54f194e3a2d47c87e3fd10b8eeaa27d"
+url = "gh:noctalia-dev/noctalia-shell/e3d292656c340e5d766e11c3e4be922a39f7ac51"
 
 [inputs.nvf]
 url = "gh:notashelf/nvf"

@@ -184,19 +184,11 @@
     "type": "github"
   },
   "noctalia": {
-    "lastModified": 1780673010,
-    "narHash": "sha256-h7Q8F019PwjIqm5lH0kJRQ/58UiELG+XwZ2B62K3PKA=",
+    "lastModified": 1781321819,
+    "narHash": "sha256-a+mKOLWyJmIB+IqERNGRv8KnpG/d/EukCE7bPfbG7O8=",
     "owner": "noctalia-dev",
     "repo": "noctalia-shell",
-    "rev": "2461f871a602f9a5688b5b01dc19c6309dd0d519",
-    "type": "github"
-  },
-  "noctalia-qs": {
-    "lastModified": 1780194487,
-    "narHash": "sha256-M+YtjKCTkHrkplNaKVyaxfa8hAWjRF6wFOUBAZvxQ4U=",
-    "owner": "noctalia-dev",
-    "repo": "noctalia-qs",
-    "rev": "07398e12b54f194e3a2d47c87e3fd10b8eeaa27d",
+    "rev": "e3d292656c340e5d766e11c3e4be922a39f7ac51",
     "type": "github"
   },
   "nvf": {
