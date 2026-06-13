@@ -40,12 +40,11 @@
       };
     };
 
-    default.includes = [ den.policies.niri-route ];
-
     aspects.niri = {
       class.route = { };
 
       includes = [
+        den.policies.niri-route
         den.aspects.niri.class
         den.aspects.niri.config
         den.aspects.niri.enable

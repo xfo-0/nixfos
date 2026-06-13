@@ -3,7 +3,7 @@
     homeManager =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.openscad ];
+        home.packages = [ pkgs.openscad-unstable ];
       };
 
     persistUser =

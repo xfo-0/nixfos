@@ -10,12 +10,14 @@
           lib,
           ...
         }:
-        lib.mkIf (options.programs ? niri) {
-          programs.niri.settings = {
-            binds."Mod+W".action = with config.lib.niri.actions; spawn user.terminal "-e" "zellij";
-            environment = {
-              EDITOR = user.editor;
-              BROWSER = user.browser;
+        {
+          programs = lib.optionalAttrs (options.programs ? niri) {
+            niri.settings = {
+              binds."Mod+W".action = with config.lib.niri.actions; spawn user.terminal "-e" "zellij";
+              environment = {
+                EDITOR = user.editor;
+                BROWSER = user.browser;
+              };
             };
           };
         };
