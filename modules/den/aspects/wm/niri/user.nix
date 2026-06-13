@@ -4,8 +4,13 @@
     { user, ... }:
     {
       homeManager =
-        { config, ... }:
         {
+          config,
+          options,
+          lib,
+          ...
+        }:
+        lib.mkIf (options.programs ? niri) {
           programs.niri.settings = {
             binds."Mod+W".action = with config.lib.niri.actions; spawn user.terminal "-e" "zellij";
             environment = {
