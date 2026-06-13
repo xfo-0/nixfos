@@ -1,4 +1,9 @@
-{ __findFile, den, ... }:
+{
+  __findFile,
+  den,
+  inputs,
+  ...
+}:
 {
   # ── Host facts ────────────────────────────────────
   den.hosts.x86_64-linux.nl0x = {
@@ -44,23 +49,11 @@
 
     nixos.hardware.facter = {
       enable = true;
-      report = {
-        virtualisation = "none";
-        hardware = {
-          cpu = [
-            {
-              vendor_name = "GenuineIntel";
-              features = [ "vmx" ];
-            }
-          ];
-          graphics_card = [
-            {
-              driver_modules = [ "i915" ];
-              vendor.name = "Intel Corporation";
-            }
-          ];
-          monitor = [ { } ];
-        };
+      report = inputs.self.lib.mkFacterReport {
+        cpuVendor = "GenuineIntel";
+        cpuFeatures = [ "vmx" ];
+        gpuDriver = "i915";
+        gpuVendor = "Intel Corporation";
       };
     };
   };

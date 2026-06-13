@@ -1,4 +1,9 @@
-{ __findFile, den, ... }:
+{
+  __findFile,
+  den,
+  inputs,
+  ...
+}:
 {
   # ── Host facts ────────────────────────────────────
   den.hosts.x86_64-linux.grpht = {
@@ -25,23 +30,11 @@
 
     nixos.hardware.facter = {
       enable = true;
-      report = {
-        virtualisation = "none";
-        hardware = {
-          cpu = [
-            {
-              vendor_name = "AuthenticAMD";
-              features = [ "svm" ];
-            }
-          ];
-          graphics_card = [
-            {
-              driver_modules = [ "amdgpu" ];
-              vendor.name = "Advanced Micro Devices, Inc. [AMD/ATI]";
-            }
-          ];
-          monitor = [ { } ];
-        };
+      report = inputs.self.lib.mkFacterReport {
+        cpuVendor = "AuthenticAMD";
+        cpuFeatures = [ "svm" ];
+        gpuDriver = "amdgpu";
+        gpuVendor = "Advanced Micro Devices, Inc. [AMD/ATI]";
       };
     };
   };
