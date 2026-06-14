@@ -1,7 +1,6 @@
 {
   __findFile,
   den,
-  inputs,
   ...
 }:
 {
@@ -9,6 +8,7 @@
   den.hosts.x86_64-linux.grpht = {
     publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOXAMJ9irvgKNxRmB1Dmg57VNAeRdqN65OSPTYO4nylG grpht";
     environment = "prod";
+    primaryUser = "xfo";
 
     settings.network.wake-on-lan = {
       interfaces = [ "enp4s0" ];
@@ -30,12 +30,7 @@
 
     nixos.hardware.facter = {
       enable = true;
-      report = inputs.self.lib.mkFacterReport {
-        cpuVendor = "AuthenticAMD";
-        cpuFeatures = [ "svm" ];
-        gpuDriver = "amdgpu";
-        gpuVendor = "Advanced Micro Devices, Inc. [AMD/ATI]";
-      };
+      reportPath = ./hardware/facter.json;
     };
   };
 }
