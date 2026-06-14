@@ -3,6 +3,7 @@
   den.aspects.claude = {
     includes = [
       den.aspects.ai.extensions
+      den.aspects.python
     ];
 
     homeManager =

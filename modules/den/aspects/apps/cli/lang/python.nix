@@ -3,7 +3,10 @@
     homeManager =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.uv ];
+        home.packages = [
+          pkgs.python3
+          pkgs.uv
+        ];
       };
   };
 }
