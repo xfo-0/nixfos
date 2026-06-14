@@ -7,6 +7,7 @@
             matches = [
               { app-id = "term_float"; }
               { app-id = "it.catboy.ripdrag"; }
+              { app-id = "imv"; }
             ];
             open-floating = true;
             border = {

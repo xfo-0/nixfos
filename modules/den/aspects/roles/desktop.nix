@@ -15,6 +15,7 @@
       yazi
       yazi-flavor
       mpv
+      imv
       browser
       cad
       kde-connect
