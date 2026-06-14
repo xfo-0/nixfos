@@ -50,6 +50,10 @@
                   mime = "video/*";
                   use = "play";
                 }
+                {
+                  mime = "image/*";
+                  use = "view";
+                }
               ];
 
               opener = {
@@ -72,6 +76,13 @@
                     desc = "Play";
                     orphan = true;
                     run = "mpv --title='yazi: \${media-title}' \"$@\"";
+                  }
+                ];
+                view = [
+                  {
+                    desc = "View";
+                    orphan = true;
+                    run = "imv \"$@\"";
                   }
                 ];
               };

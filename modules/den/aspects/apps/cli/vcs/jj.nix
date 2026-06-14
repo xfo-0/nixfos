@@ -523,6 +523,11 @@
                 scope = "revisions.rebase";
               }
               {
+                key = "esc";
+                action = "revisions.rebase.cancel";
+                scope = "revisions.rebase";
+              }
+              {
                 key = "enter";
                 action = "revisions.rebase.apply";
                 scope = "revisions.rebase";
@@ -586,6 +591,11 @@
                 scope = "revisions.squash";
               }
               {
+                key = "esc";
+                action = "revisions.squash.cancel";
+                scope = "revisions.squash";
+              }
+              {
                 key = "enter";
                 action = "revisions.squash.apply";
                 scope = "revisions.squash";
@@ -621,6 +631,11 @@
               {
                 key = "pgdown";
                 action = "revisions.page_down";
+                scope = "revisions.revert";
+              }
+              {
+                key = "esc";
+                action = "revisions.revert.cancel";
                 scope = "revisions.revert";
               }
               {
@@ -664,6 +679,11 @@
               {
                 key = "@";
                 action = "revisions.jump_to_working_copy";
+                scope = "revisions.duplicate";
+              }
+              {
+                key = "esc";
+                action = "revisions.duplicate.cancel";
                 scope = "revisions.duplicate";
               }
               {
