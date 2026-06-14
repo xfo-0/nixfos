@@ -11,7 +11,7 @@
       options.interfaces = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         default = [ ];
-        description = "Interface names to enable Wake-on-LAN on (magic-packet method).";
+        description = "Interface names to enable Wake-on-LAN on (magic-packet method). Empty derives from facter detected.dhcp.interfaces.";
         example = [ "enp4s0" ];
       };
       options.mac = lib.mkOption {
@@ -34,9 +34,16 @@
       };
 
     nixos =
-      { host, pkgs, ... }:
+      {
+        config,
+        host,
+        pkgs,
+        ...
+      }:
       let
-        ifaces = host.settings.network.wake-on-lan.interfaces or [ ];
+        explicit = host.settings.network.wake-on-lan.interfaces or [ ];
+        detected = config.hardware.facter.detected.dhcp.interfaces or [ ];
+        ifaces = if explicit != [ ] then explicit else detected;
       in
       {
         networking.interfaces = lib.genAttrs ifaces (_: {

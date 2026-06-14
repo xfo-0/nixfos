@@ -11,7 +11,6 @@
     primaryUser = "xfo";
 
     settings.network.wake-on-lan = {
-      interfaces = [ "enp4s0" ];
       mac = "00:00:00:00:00:00";
     };
   };
