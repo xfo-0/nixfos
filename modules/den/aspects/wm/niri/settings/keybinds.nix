@@ -7,6 +7,10 @@
           with config.lib.niri.actions;
           let
             sh = spawn "sh" "-c";
+            shotDir = "${config.xdg.userDirs.pictures}/Screenshots";
+            satty =
+              grab:
+              ''mkdir -p "${shotDir}" && ${grab} | satty --filename - --output-filename "${shotDir}/$(date '+%Y-%m-%d %H-%M-%S').png" --early-exit --copy-command wl-copy'';
           in
           {
             # Workspace focus (offset by 1 for empty-workspace-above-first)
@@ -75,6 +79,10 @@
             };
             "Mod+Shift+P" = {
               action = spawn "rbw-pick" "code";
+              repeat = false;
+            };
+            "Mod+Shift+y" = {
+              action = sh (satty ''grim -g "$(slurp -d)" -'');
               repeat = false;
             };
 

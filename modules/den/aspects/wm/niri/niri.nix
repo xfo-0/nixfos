@@ -63,6 +63,9 @@
             home.packages = with pkgs; [
               wl-clipboard
               cliphist
+              satty
+              grim
+              slurp
             ];
 
             programs.niri = {
