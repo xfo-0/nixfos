@@ -1,2 +1,8 @@
 .beads/
 result
+
+# agent-context: tracked-on-disk, never in VCS
+/.claude/
+/den-guidelines.md
+/docs/
+/.opencode/
