@@ -86,6 +86,7 @@ in
   den.classes.persistUser.description = "Persist user-relative directories/files";
   den.classes.persistUserTmp.description = "Persist user-relative tmpfile entries";
   den.classes.persistUserIgnore.description = "User-relative paths excluded from find-ephemeral scans";
+  den.classes.persistReplicated.description = "Persist + register crucial paths for cross-host replication";
 
   den.policies.persist-route = mkSystemPersistRoute {
     fromClass = "persist";
@@ -115,6 +116,15 @@ in
     requiresFindEphemeral = true;
   };
 
+  den.policies.persistReplicated-route = mkSystemPersistRoute {
+    fromClass = "persistReplicated";
+    path = [
+      "hostConfig"
+      "replication"
+    ];
+    dedup = true;
+  };
+
   den.policies.persistUser-route = mkUserPersistRoute {
     fromClass = "persistUser";
     intoSubPath = "userPersist";
@@ -135,9 +145,7 @@ in
     den.policies.persist-route
     den.policies.persistTmp-route
     den.policies.persistIgnore-route
-    den.policies.persistUser-route
-    den.policies.persistUserTmp-route
-    den.policies.persistUserIgnore-route
+    den.policies.persistReplicated-route
   ];
 
   # The classes aspect is now empty of routing logic — kept as a structural

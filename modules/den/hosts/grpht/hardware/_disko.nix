@@ -1,13 +1,16 @@
+let
+  nvme0 = "/dev/disk/by-id/REPLACE_990PRO_A";
+  nvme1 = "/dev/disk/by-id/REPLACE_990PRO_B";
+in
 {
   disko.devices = {
     disk = {
-      WD-BLACK-SN770-1TB = {
-        device = "/dev/disk/by-id/REPLACE_WITH_HOST_DISK";
+      nvme0 = {
+        device = nvme0;
         type = "disk";
         content = {
           type = "gpt";
           partitions = {
-            # Boot
             ESP = {
               name = "ESP";
               size = "1G";
@@ -19,7 +22,14 @@
                 mountOptions = [ "umask=0077" ];
               };
             };
-            # Persistent storage
+            swap = {
+              size = "32G";
+              content = {
+                type = "swap";
+                discardPolicy = "both";
+                resumeDevice = true;
+              };
+            };
             NIXOS = {
               size = "100%";
               content = {
@@ -27,12 +37,15 @@
                 extraArgs = [
                   "-L NIXOS"
                   "-f"
+                  "-d raid0"
+                  "-m raid1"
+                  "${nvme1}-part1"
                 ];
                 subvolumes = {
                   "nix" = {
                     mountpoint = "/nix";
                     mountOptions = [
-                      "compress=zstd:1"
+                      "compress=zstd:3"
                       "noatime"
                       "ssd"
                     ];
@@ -40,7 +53,7 @@
                   "log" = {
                     mountpoint = "/var/log";
                     mountOptions = [
-                      "compress=zstd:1"
+                      "compress=zstd:3"
                       "noatime"
                       "ssd"
                     ];
@@ -48,22 +61,18 @@
                   "persist" = {
                     mountpoint = "/persist";
                     mountOptions = [
-                      "compress=zstd:1"
+                      "compress=zstd:3"
                       "noatime"
                       "ssd"
                     ];
                   };
                   "home" = {
-                    mountpoint = "/persist/home";
+                    mountpoint = "/home";
                     mountOptions = [
-                      "compress=zstd:1"
+                      "compress=zstd:3"
                       "noatime"
                       "ssd"
                     ];
-                  };
-                  "swap" = {
-                    mountpoint = "/swap";
-                    swap.swapfile.size = "64G";
                   };
                 };
               };
@@ -71,8 +80,22 @@
           };
         };
       };
+
+      nvme1 = {
+        device = nvme1;
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            NIXOS = {
+              size = "100%";
+            };
+          };
+        };
+      };
+
     };
-    # Ephemeral root
+
     nodev."/" = {
       fsType = "tmpfs";
       mountOptions = [

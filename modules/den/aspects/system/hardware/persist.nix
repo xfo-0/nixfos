@@ -7,6 +7,7 @@
       den.aspects.persist._.class
       den.aspects.persist._.find-ephemeral
       den.aspects.persist._.minimal
+      den.aspects.persist._.replicated
     ];
 
     nixos =

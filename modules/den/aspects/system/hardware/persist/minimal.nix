@@ -77,8 +77,7 @@
             "/var/log".neededForBoot = true;
           };
 
-          # Top-dir trash fallback; tmpfs home trash is cross-subvol (EXDEV) from /persist/home files.
-          systemd.tmpfiles.settings.preservation-trash."/persist/home/.Trash".d.mode = "1777";
+          systemd.tmpfiles.settings.preservation-trash."/home/.Trash".d.mode = "1777";
 
           # Required compatibility with systemd's ConditionFirstBoot for `/etc/machine-id`
           systemd.services.systemd-machine-id-commit = lib.mkDefault {

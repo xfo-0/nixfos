@@ -1,13 +1,17 @@
+let
+  nvme0 = "/dev/disk/by-id/REPLACE_SN770_1TB";
+  nvme1 = "/dev/disk/by-id/REPLACE_SN750_1TB";
+  nvme2 = "/dev/disk/by-id/REPLACE_HIGHREL_500GB";
+in
 {
   disko.devices = {
     disk = {
-      WD-BLACK-SN770-1TB = {
-        device = "/dev/disk/by-id/REPLACE_WITH_HOST_DISK";
+      nvme0 = {
+        device = nvme0;
         type = "disk";
         content = {
           type = "gpt";
           partitions = {
-            # Boot
             ESP = {
               name = "ESP";
               size = "1G";
@@ -19,6 +23,13 @@
                 mountOptions = [ "umask=0077" ];
               };
             };
+            swap = {
+              size = "16G";
+              content = {
+                type = "swap";
+                discardPolicy = "both";
+              };
+            };
             NIXOS = {
               size = "100%";
               content = {
@@ -26,6 +37,10 @@
                 extraArgs = [
                   "-L NIXOS"
                   "-f"
+                  "-d raid0"
+                  "-m raid1"
+                  "${nvme1}-part1"
+                  "${nvme2}-part1"
                 ];
                 subvolumes = {
                   "nix" = {
@@ -53,16 +68,12 @@
                     ];
                   };
                   "home" = {
-                    mountpoint = "/persist/home";
+                    mountpoint = "/home";
                     mountOptions = [
                       "compress=zstd:3"
                       "noatime"
                       "ssd"
                     ];
-                  };
-                  "swap" = {
-                    mountpoint = "/swap";
-                    swap.swapfile.size = "64G";
                   };
                 };
               };
@@ -70,7 +81,34 @@
           };
         };
       };
+
+      nvme1 = {
+        device = nvme1;
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            NIXOS = {
+              size = "100%";
+            };
+          };
+        };
+      };
+
+      nvme2 = {
+        device = nvme2;
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            NIXOS = {
+              size = "100%";
+            };
+          };
+        };
+      };
     };
+
     nodev."/" = {
       fsType = "tmpfs";
       mountOptions = [

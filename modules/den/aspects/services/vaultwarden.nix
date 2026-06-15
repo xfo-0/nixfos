@@ -157,15 +157,25 @@
       {
         directories = lib.optionals (cfg.enable or false) [
           {
-            directory = cfg.dataDir or "/var/lib/vaultwarden";
-            user = "vaultwarden";
-            group = "vaultwarden";
-            mode = "0700";
-          }
-          {
             directory = "/var/lib/caddy";
             user = "caddy";
             group = "caddy";
+            mode = "0700";
+          }
+        ];
+      };
+
+    persistReplicated =
+      { host, ... }:
+      let
+        cfg = host.settings.services.vaultwarden or { };
+      in
+      {
+        directories = lib.optionals (cfg.enable or false) [
+          {
+            directory = cfg.dataDir or "/var/lib/vaultwarden";
+            user = "vaultwarden";
+            group = "vaultwarden";
             mode = "0700";
           }
         ];
