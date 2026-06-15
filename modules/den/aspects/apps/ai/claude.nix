@@ -237,6 +237,10 @@
             how = "symlink";
           }
           {
+            directory = ".engram";
+            how = "symlink";
+          }
+          {
             directory = "${hmConfig.xdg.cacheHome}/claude-cli-nodejs";
             how = "symlink";
           }

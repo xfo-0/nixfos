@@ -6,6 +6,9 @@
   include: [
     "/home/xfo/.config/moor/inputs.json"
   ],
+  try: {
+    build: "nix build /etc/nixos#nixosConfigurations.$(hostname).config.system.build.toplevel"
+  },
   groups: {
     den: "tags like '%den%'",
     pinned: "pin_rev != ''",
