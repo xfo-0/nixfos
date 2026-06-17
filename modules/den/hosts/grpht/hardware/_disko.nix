@@ -1,6 +1,7 @@
 let
   nvme0 = "/dev/disk/by-id/REPLACE_990PRO_A";
   nvme1 = "/dev/disk/by-id/REPLACE_990PRO_B";
+  mediaHdd = "/dev/disk/by-id/REPLACE_MEDIA_HDD";
 in
 {
   disko.devices = {
@@ -89,6 +90,25 @@ in
           partitions = {
             NIXOS = {
               size = "100%";
+            };
+          };
+        };
+      };
+
+      media = {
+        device = mediaHdd;
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            DATA = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "xfs";
+                mountpoint = "/data";
+                mountOptions = [ "noatime" ];
+              };
             };
           };
         };
