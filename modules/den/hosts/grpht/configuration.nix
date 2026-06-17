@@ -14,6 +14,7 @@
       mac = "00:00:00:00:00:00";
     };
     settings.backup-sink.enable = true;
+    settings.services.media.base.enable = true;
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -27,6 +28,7 @@
       wake-on-lan
       wake-client
       backup-sink
+      services.media.base
     ];
 
     nixos.hardware.facter = {
