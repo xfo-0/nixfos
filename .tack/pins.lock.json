@@ -263,6 +263,14 @@
     "rev": "db947814a175b7ca6ded66e21383d938df01c227",
     "type": "github"
   },
+  "vpn-confinement": {
+    "lastModified": 1778182451,
+    "narHash": "sha256-Bz3n2THDGf90Z9gMqhH/J492prYH8B6RFRlxv/fPBwc=",
+    "owner": "Maroka-chan",
+    "repo": "VPN-Confinement",
+    "rev": "cf5bfc4c3559f2e783698b1aa23c165072039a7d",
+    "type": "github"
+  },
   "yazi": {
     "lastModified": 1781075389,
     "narHash": "sha256-Omklpdcjdj3yo/L0MdfUeL9+L/Tue7F5/oeXlbeyvmI=",

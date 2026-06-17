@@ -32,6 +32,7 @@
       services.media.servarr
       services.media.jellyfin
       services.media.unpackerr
+      services.media.qbittorrent
     ];
 
     nixos.hardware.facter = {

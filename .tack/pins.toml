@@ -114,5 +114,8 @@ url = "gh:manic-systems/tack"
 [inputs.treefmt-nix]
 url = "gh:numtide/treefmt-nix"
 
+[inputs.vpn-confinement]
+url = "gh:Maroka-chan/VPN-Confinement"
+
 [inputs.yazi]
 url = "gh:sxyazi/yazi"
