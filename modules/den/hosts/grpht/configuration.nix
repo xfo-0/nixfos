@@ -33,6 +33,8 @@
       services.media.jellyfin
       services.media.unpackerr
       services.media.qbittorrent
+      services.media.containers
+      services.media.proxy
     ];
 
     nixos.hardware.facter = {
