@@ -13,6 +13,7 @@
     settings.network.wake-on-lan = {
       mac = "00:00:00:00:00:00";
     };
+    settings.backup-sink.enable = true;
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -25,6 +26,7 @@
       services.binary-cache.harmonia-client
       wake-on-lan
       wake-client
+      backup-sink
     ];
 
     nixos.hardware.facter = {
