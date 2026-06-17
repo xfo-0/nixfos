@@ -29,6 +29,9 @@
       wake-client
       backup-sink
       services.media.base
+      services.media.servarr
+      services.media.jellyfin
+      services.media.unpackerr
     ];
 
     nixos.hardware.facter = {
