@@ -1,13 +1,25 @@
 let
-  nvme0 = "/dev/disk/by-id/REPLACE_SN770_1TB";
-  nvme1 = "/dev/disk/by-id/REPLACE_SN750_1TB";
-  nvme2 = "/dev/disk/by-id/REPLACE_HIGHREL_500GB";
+  sn750 = "/dev/disk/by-id/REPLACE_SN750";
+  sn770 = "/dev/disk/by-id/nvme-WD_BLACK_SN770_1TB_22152X802959";
 in
 {
   disko.devices = {
     disk = {
-      nvme0 = {
-        device = nvme0;
+      data-sn750 = {
+        device = sn750;
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            NIXOS = {
+              size = "100%";
+            };
+          };
+        };
+      };
+
+      root-sn770 = {
+        device = sn770;
         type = "disk";
         content = {
           type = "gpt";
@@ -39,8 +51,7 @@ in
                   "-f"
                   "-d raid0"
                   "-m raid1"
-                  "${nvme1}-part1"
-                  "${nvme2}-part1"
+                  "${sn750}-part1"
                 ];
                 subvolumes = {
                   "nix" = {
@@ -77,32 +88,6 @@ in
                   };
                 };
               };
-            };
-          };
-        };
-      };
-
-      nvme1 = {
-        device = nvme1;
-        type = "disk";
-        content = {
-          type = "gpt";
-          partitions = {
-            NIXOS = {
-              size = "100%";
-            };
-          };
-        };
-      };
-
-      nvme2 = {
-        device = nvme2;
-        type = "disk";
-        content = {
-          type = "gpt";
-          partitions = {
-            NIXOS = {
-              size = "100%";
             };
           };
         };
