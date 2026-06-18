@@ -362,6 +362,9 @@
 
         home.file.".floorp/xfo/customKeys.json".source = ./set/floorp.customKeys.json;
 
+        # Floorp recreates an empty ~/Floorp on launch (upstream quirk); reap when empty.
+        xdg.configFile."user-tmpfiles.d/floorp-reap.conf".text = "r %h/Floorp\n";
+
         xdg.mimeApps.defaultApplications = {
           "text/html" = "floorp.desktop";
           "x-scheme-handler/http" = "floorp.desktop";
