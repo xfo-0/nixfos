@@ -20,6 +20,7 @@
     settings.services.media.hd-idle.spinDownDisks = [ "ata-ST26000DM000-3Y8103_ZXA0XSXK" ];
     settings.sunshine.enable = true;
     settings.gaming.enable = true;
+    settings.services.atuin-server.enable = true;
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -43,6 +44,7 @@
       services.media.configarr
       services.media.proxy
       services.media.hd-idle
+      services.atuin-server
       sunshine
       gaming
     ];
