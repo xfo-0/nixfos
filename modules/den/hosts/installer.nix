@@ -29,6 +29,15 @@
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINI1yeAdQ0qqHOr/Xt/Bz3ZXmPPDOEIn+hLWxX4iyHct xfo"
         ];
 
+        networking.hostName = lib.mkForce "installer";
+        services.avahi = {
+          enable = true;
+          publish = {
+            enable = true;
+            addresses = true;
+          };
+        };
+
         services.getty.autologinUser = lib.mkForce "root";
 
         environment.systemPackages = with pkgs; [
@@ -42,7 +51,8 @@
 
         services.getty.helpLine = lib.mkForce ''
           === NixOS Installer ===
-          Deploy: nixos-anywhere --flake .#HOST --extra-files .secrets/hosts/HOST root@THIS-IP
+          Hostname: installer.local (mDNS) — or read THIS-IP below
+          Deploy from controller: nu scripts/deploy.nu HOST root@installer.local --xfo-key <key>
         '';
       };
   };

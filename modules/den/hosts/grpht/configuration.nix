@@ -54,5 +54,6 @@
       reportPath = ./hardware/facter.json;
     };
     nixos.boot.kernelParams = [ "video=DP-1:1920x1080@60D" ];
+    nixos.services.avahi.nssmdns4 = true;
   };
 }
