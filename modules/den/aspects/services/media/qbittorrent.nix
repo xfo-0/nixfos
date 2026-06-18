@@ -4,7 +4,7 @@
 
   den.aspects.services.media.qbittorrent = {
     nixos =
-      { host, ... }:
+      { host, config, ... }:
       let
         cfg = host.settings.services.media.base or { };
       in
@@ -12,9 +12,14 @@
         imports = [ inputs.vpn-confinement.nixosModules.default ];
 
         config = lib.mkIf (cfg.enable or false) {
+          sops.secrets."proton-wg.conf" = {
+            sopsFile = "${host.secretPath}/proton-wg.conf";
+            format = "binary";
+          };
+
           vpnNamespaces.pvpn = {
             enable = true;
-            wireguardConfigFile = "/run/secrets/proton-wg.conf";
+            wireguardConfigFile = config.sops.secrets."proton-wg.conf".path;
             accessibleFrom = [
               "127.0.0.1/32"
               "100.64.0.0/10"

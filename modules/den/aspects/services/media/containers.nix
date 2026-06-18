@@ -15,13 +15,13 @@
           backend = "podman";
           containers = {
             jellyseerr = {
-              image = "ghcr.io/fallenbagel/jellyseerr:2.5.2";
+              image = "ghcr.io/fallenbagel/jellyseerr:2.7.3";
               ports = [ "127.0.0.1:5055:5055" ];
               volumes = [ "/var/lib/jellyseerr:/app/config" ];
               environment.TZ = "Etc/UTC";
             };
             configarr = {
-              image = "ghcr.io/raydak-labs/configarr:1.14.0";
+              image = "ghcr.io/raydak-labs/configarr:1.28.0";
               volumes = [
                 "/var/lib/configarr:/app/config"
                 "/var/lib/configarr/repos:/app/repos"
