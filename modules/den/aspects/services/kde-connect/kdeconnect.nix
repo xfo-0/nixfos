@@ -3,10 +3,8 @@
     nixos =
       { pkgs, ... }:
       {
-        environment.systemPackages = [
-          pkgs.kdePackages.kdeconnect-kde
-          pkgs.sshfs
-        ];
+        programs.kdeconnect.enable = true;
+        environment.systemPackages = [ pkgs.sshfs ];
       };
 
     persistUser =
