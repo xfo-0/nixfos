@@ -22,19 +22,19 @@ creation_rules:
           - *grpht
           - *nl0x
 
-  - path_regex: \.secrets/hosts/AO05/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: \.secrets/hosts/AO05/.*$
     key_groups:
       - age:
           - *xfo
           - *AO05
 
-  - path_regex: \.secrets/hosts/grpht/.*\.(yaml|json|env|ini|sops|conf)$
+  - path_regex: \.secrets/hosts/grpht/.*$
     key_groups:
       - age:
           - *xfo
           - *grpht
 
-  - path_regex: \.secrets/hosts/nl0x/.*\.(yaml|json|env|ini|sops)$
+  - path_regex: \.secrets/hosts/nl0x/.*$
     key_groups:
       - age:
           - *xfo

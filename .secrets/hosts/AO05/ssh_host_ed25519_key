@@ -1,0 +1,18 @@
+{
+	"data": "ENC[AES256_GCM,data:qKcxfRuQ/x4g+mYkdVDeuIZtQSkY4zKUKGJrKCKZOBKzR3xJ8nCCs/VS3MACTQY11wmTeXwoZHruZDJTztWEBF2sKqlnCBPeJ+RVv/VDh5A3pcqEKrjWvVgmntZU92+7bY/09+0FoIDk49eCYhw3fNfwO/QkB+R0Y3hzQvyKkcTpE1mgzIemcfCr3BNkmXvp1/puT+fXPaqCqWyoCDUt0EofAuLMwV5nN6AAg3/GZOpUjnrZ//W0lv2x3X4oM1zNYSW3W0kU+tGyK6Q/pgXoJGOp3cKuQzxRINKRDQbgDqz2zqgrO/2fQvoMf0sfcVm2zVOj8M7pK5F/1Ge/sxqEF6/CFbYmkDBHjUIWq1DhPFhsJt+YbFVTnk8IZ5IdRB7VO3gqZIR6aBrh6S9Ufox+cWHkPL0OjTregBSWenvW7i9J1ELQ8y9kNRf4p1aD4nTHp+paa837SL9Aajx4uxeAUkV6Ep3hieCs6yg1aPRTR92PXeAEgg3+VphJaKaNeDLP+n5N,iv:3hXqO/Lhaxx32GidDXOb8QDDNoafErVF7F0vREAecmk=,tag:hyTrcDeYUiF5VdrdhDaLpA==,type:str]",
+	"sops": {
+		"age": [
+			{
+				"enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA4b2NuNlRXR3BZeEgvQ1dB\neUd3K3NPWXFCOWh4V1pOZWorWGlRWi9NS0RjCmlpN1dMYmRUZzlRam9LdE5aNFpt\nQkV6Ry9QTHVxbUk4VkMwR1Mra1VSMHMKLS0tIDFsSDdCMVJaSlZCM0R2a1ZYajNm\nUjlYTlpnV3NZdnZDRHR4NEZVbWxYS3MKL5ApjrvxuPBmLpX4pTJ0YArSpnXKYAM1\nDMOC+ghOB/y9iTTmyqvxYxjpnju5OYetDY7TVodYPNcBk7OqNBn1sA==\n-----END AGE ENCRYPTED FILE-----\n",
+				"recipient": "age1fenzpa09q6dgpec6yyyvh8ufdennprmvpmm474swtk760a6f3dkssxd42h"
+			},
+			{
+				"enc": "-----BEGIN AGE ENCRYPTED FILE-----\nYWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBFVllCeElta011ejFhQzlt\naFFmcW5rQTljTkJIV2QvMWo2bUgvdFl3azA4CjNxbittVysyaWZEYWdsMlNMM2N5\neGN5V0UrL3lBVWdUOEhhQkcxWFZ5ZzAKLS0tIE5JalNiWks4UjBJeUtoVEJzQjJK\nQ0NOaWJvcjdBeFA1VWwrQXRoNUpwQkkKrddGGozDanJiH7cmi31uiHcKL288CUYM\n3ofuYnaoYJeKTUOVPS6R8y3ORwcK1ipUIQSSdiiCSArDsPgRlH55nw==\n-----END AGE ENCRYPTED FILE-----\n",
+				"recipient": "age10dj68x8c9kujkvhfatlpq3vvp84v4klwmhug9evu3m2yh7dk5ahsk79v4w"
+			}
+		],
+		"lastmodified": "2026-06-18T16:32:17Z",
+		"mac": "ENC[AES256_GCM,data:nhosveD9dQGQtgzfyDPwHXd776yuMhEkF6tluXQzcO9Ym8KEKn6jwFzXnl0qBmM6QKP5OXvjC2w+EP1+mmQ5p9R9R9o0pUiXV24lc8aesnZtMMQXXRx+oqLZBr/FCFa2FttOFjB3BtmuGeLE+jhQ07lMO1u91ame9ztQYC8/tys=,iv:EexAcjVsf5B7ODIpUDTcLrG1KU33CYf2/DbA4NuvhIc=,tag:Ix37ldJ1+K4fmD/PEWqabw==,type:str]",
+		"version": "3.13.1"
+	}
+}
