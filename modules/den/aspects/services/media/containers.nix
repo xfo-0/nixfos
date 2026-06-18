@@ -20,14 +20,6 @@
               volumes = [ "/var/lib/jellyseerr:/app/config" ];
               environment.TZ = "Etc/UTC";
             };
-            configarr = {
-              image = "ghcr.io/raydak-labs/configarr:1.28.0";
-              volumes = [
-                "/var/lib/configarr:/app/config"
-                "/var/lib/configarr/repos:/app/repos"
-              ];
-              environment.TZ = "Etc/UTC";
-            };
           };
         };
       };
@@ -55,10 +47,6 @@
         directories = lib.optionals (cfg.enable or false) [
           {
             directory = "/var/lib/jellyseerr";
-            mode = "0700";
-          }
-          {
-            directory = "/var/lib/configarr";
             mode = "0700";
           }
         ];

@@ -34,6 +34,7 @@
       services.media.unpackerr
       services.media.qbittorrent
       services.media.containers
+      services.media.configarr
       services.media.proxy
     ];
 

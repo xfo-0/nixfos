@@ -2,11 +2,16 @@
 {
   den.aspects.services.media.servarr = {
     nixos =
-      { host, ... }:
+      { host, config, ... }:
       let
         cfg = host.settings.services.media.base or { };
       in
       lib.mkIf (cfg.enable or false) {
+        sops.secrets."media-arr.env" = {
+          sopsFile = "${host.secretPath}/media-arr.env";
+          format = "binary";
+        };
+
         services.prowlarr = {
           enable = true;
           openFirewall = false;
@@ -15,11 +20,13 @@
           enable = true;
           group = "media";
           openFirewall = false;
+          environmentFiles = [ config.sops.secrets."media-arr.env".path ];
         };
         services.radarr = {
           enable = true;
           group = "media";
           openFirewall = false;
+          environmentFiles = [ config.sops.secrets."media-arr.env".path ];
         };
         services.lidarr = {
           enable = true;
