@@ -9,5 +9,7 @@
       country = "ZZ";
       region = "dev";
     };
+
+    settings.capabilities.persistent.enable = true;
   };
 }

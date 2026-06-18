@@ -35,13 +35,17 @@ let
       dedup ? false,
       requiresFindEphemeral ? false,
     }:
-    routes.mkSystemRoute {
-      inherit fromClass path;
-      adapterKey = "persist-route/${fromClass}";
-      inherit guardArgs;
-      guard = mkPersistGuard requiresFindEphemeral;
-      adapterModule = if dedup then routes.dedupListModule else null;
-    };
+    let
+      base = routes.mkSystemRoute {
+        inherit fromClass path;
+        adapterKey = "persist-route/${fromClass}";
+        inherit guardArgs;
+        guard = mkPersistGuard requiresFindEphemeral;
+        adapterModule = if dedup then routes.dedupListModule else null;
+      };
+    in
+    args@{ host, ... }:
+    lib.optionals (host.settings.capabilities.persistent.enable or false) (base args);
 
   mkUserPersistRoute =
     {
@@ -52,7 +56,12 @@ let
     }:
     args@{ host, user, ... }:
     lib.optional
-      (host.class == "nixos" && lib.elem "homeManager" (user.classes or [ ]) && !(args ? home))
+      (
+        (host.settings.capabilities.persistent.enable or false)
+        && host.class == "nixos"
+        && lib.elem "homeManager" (user.classes or [ ])
+        && !(args ? home)
+      )
       (
         den.lib.policy.route (
           {
