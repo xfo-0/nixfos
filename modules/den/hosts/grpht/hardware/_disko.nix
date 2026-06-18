@@ -1,12 +1,12 @@
 let
-  nvme0 = "/dev/disk/by-id/REPLACE_990PRO_A";
-  nvme1 = "/dev/disk/by-id/REPLACE_990PRO_B";
-  mediaHdd = "/dev/disk/by-id/REPLACE_MEDIA_HDD";
+  nvme0 = "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_with_Heatsink_4TB_S7DSNJ0Y301169F";
+  nvme1 = "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_with_Heatsink_4TB_S7DSNJ0Y301172W";
+  mediaHdd = "/dev/disk/by-id/ata-ST26000DM000-3Y8103_ZXA0XSXK";
 in
 {
   disko.devices = {
     disk = {
-      nvme0 = {
+      nvme-root = {
         device = nvme0;
         type = "disk";
         content = {
@@ -82,7 +82,7 @@ in
         };
       };
 
-      nvme1 = {
+      nvme-data = {
         device = nvme1;
         type = "disk";
         content = {
