@@ -19,6 +19,7 @@
     settings.services.media.proxy.domain = "grpht.tail0df4ba.ts.net";
     settings.services.media.hd-idle.spinDownDisks = [ "ata-ST26000DM000-3Y8103_ZXA0XSXK" ];
     settings.sunshine.enable = true;
+    settings.gaming.enable = true;
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -43,6 +44,7 @@
       services.media.proxy
       services.media.hd-idle
       sunshine
+      gaming
     ];
 
     nixos.hardware.facter = {
