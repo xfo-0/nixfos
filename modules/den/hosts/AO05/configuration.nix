@@ -42,12 +42,7 @@
       {
         nixos.hardware.facter = {
           enable = true;
-          report = inputs.self.lib.mkFacterReport {
-            cpuVendor = "AuthenticAMD";
-            cpuFeatures = [ "svm" ];
-            gpuDriver = "amdgpu";
-            gpuVendor = "Advanced Micro Devices, Inc. [AMD/ATI]";
-          };
+          reportPath = ./hardware/facter.json;
         };
       }
       services.vaultwarden

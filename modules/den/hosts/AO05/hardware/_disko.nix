@@ -1,5 +1,5 @@
 let
-  sn750 = "/dev/disk/by-id/REPLACE_SN750";
+  sn750 = "/dev/disk/by-id/nvme-WDS100T3X0C-00SJG0_19245B803265";
   sn770 = "/dev/disk/by-id/nvme-WD_BLACK_SN770_1TB_22152X802959";
 in
 {
