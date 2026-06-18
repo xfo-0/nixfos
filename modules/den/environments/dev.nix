@@ -10,6 +10,9 @@
       region = "dev";
     };
 
-    settings.capabilities.persistent.enable = true;
+    settings.capabilities = {
+      persistent.enable = true;
+      workstation.enable = true;
+    };
   };
 }

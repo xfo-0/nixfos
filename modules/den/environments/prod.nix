@@ -37,6 +37,7 @@ in
       network.wake-client.broadcast = broadcast;
       services.binary-cache.ncps.upstreamCaches = [ "https://cache.nixos.org" ];
       capabilities.persistent.enable = true;
+      capabilities.workstation.enable = true;
     };
   };
 }
