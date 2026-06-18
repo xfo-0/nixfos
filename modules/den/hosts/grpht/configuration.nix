@@ -18,6 +18,7 @@
     settings.services.media.base.enable = true;
     settings.services.media.proxy.domain = "grpht.tail0df4ba.ts.net";
     settings.services.media.hd-idle.spinDownDisks = [ "ata-ST26000DM000-3Y8103_ZXA0XSXK" ];
+    settings.sunshine.enable = true;
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -41,11 +42,13 @@
       services.media.configarr
       services.media.proxy
       services.media.hd-idle
+      sunshine
     ];
 
     nixos.hardware.facter = {
       enable = true;
       reportPath = ./hardware/facter.json;
     };
+    nixos.boot.kernelParams = [ "video=DP-1:1920x1080@60D" ];
   };
 }
