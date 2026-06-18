@@ -6,7 +6,7 @@
 {
   # ── Host facts ────────────────────────────────────
   den.hosts.x86_64-linux.grpht = {
-    publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOXAMJ9irvgKNxRmB1Dmg57VNAeRdqN65OSPTYO4nylG grpht";
+    publicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBtNxZnFKwpTD/QFSnb61mUuNvvV6FTmnlfA3R3GsWrR grpht";
     environment = "prod";
     primaryUser = "xfo";
 
