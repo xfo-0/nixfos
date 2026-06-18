@@ -107,7 +107,12 @@ in
                 type = "filesystem";
                 format = "xfs";
                 mountpoint = "/data";
-                mountOptions = [ "noatime" ];
+                mountOptions = [
+                  "noatime"
+                  "nofail"
+                  "x-systemd.automount"
+                  "x-systemd.idle-timeout=1800"
+                ];
               };
             };
           };

@@ -4,33 +4,75 @@
     settings.options.enable = lib.mkEnableOption "media (arr) stack on this host";
 
     nixos =
-      { host, ... }:
+      { host, pkgs, ... }:
       let
         cfg = host.settings.services.media.base or { };
+
+        treeDirs = [
+          "/data/media"
+          "/data/media/tv"
+          "/data/media/movies"
+          "/data/media/music"
+          "/data/media/books"
+          "/data/torrents"
+          "/data/torrents/tv"
+          "/data/torrents/movies"
+          "/data/torrents/music"
+          "/data/torrents/books"
+        ];
+
+        dataServices = [
+          "sonarr"
+          "radarr"
+          "lidarr"
+          "readarr"
+          "prowlarr"
+          "bazarr"
+          "qbittorrent"
+          "unpackerr"
+        ];
+        netServices = [
+          "pvpn"
+          "natpmp-pvpn"
+        ];
+
+        gate = extra: {
+          wantedBy = lib.mkForce [ "media.target" ];
+          partOf = [ "media.target" ];
+        }
+        // extra;
       in
       lib.mkIf (cfg.enable or false) {
         users.groups.media = { };
 
-        systemd.tmpfiles.settings."media-tree" =
-          let
-            dir = {
-              user = "root";
-              group = "media";
-              mode = "2775";
+        systemd.targets.media = {
+          description = "On-demand media acquisition stack (arr + qBittorrent)";
+        };
+
+        systemd.services =
+          (lib.genAttrs dataServices (_: gate { after = [ "media-tree.service" ]; }))
+          // (lib.genAttrs netServices (_: gate { }))
+          // {
+            media-tree = {
+              description = "Create /data media + torrents tree";
+              wantedBy = [ "media.target" ];
+              partOf = [ "media.target" ];
+              unitConfig.RequiresMountsFor = "/data";
+              path = [ pkgs.coreutils ];
+              serviceConfig = {
+                Type = "oneshot";
+                RemainAfterExit = true;
+                ExecStart = pkgs.writeShellScript "media-tree" (
+                  lib.concatMapStringsSep "\n" (d: "install -d -o root -g media -m 2775 ${d}") treeDirs
+                );
+              };
             };
-          in
-          {
-            "/data/media".d = dir;
-            "/data/media/tv".d = dir;
-            "/data/media/movies".d = dir;
-            "/data/media/music".d = dir;
-            "/data/media/books".d = dir;
-            "/data/torrents".d = dir;
-            "/data/torrents/tv".d = dir;
-            "/data/torrents/movies".d = dir;
-            "/data/torrents/music".d = dir;
-            "/data/torrents/books".d = dir;
           };
+
+        systemd.timers.configarr = {
+          wantedBy = lib.mkForce [ "media.target" ];
+          partOf = [ "media.target" ];
+        };
       };
   };
 }
