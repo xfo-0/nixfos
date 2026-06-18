@@ -311,6 +311,8 @@
               "privacy.clearOnShutdown_v2.cookiesAndStorage" = false;
               "browser.startup.homepage" = "chrome://browser/content/blanktab.html";
               "browser.toolbars.bookmarks.visibility" = "never";
+              # sideloaded (profile) extensions are auto-disabled by default; 0 = enable on first run
+              "extensions.autoDisableScopes" = 0;
               "browser.uiCustomization.state" = builtins.toJSON (
                 builtins.fromJSON (builtins.readFile ./set/floorp.uiState.json)
               );
