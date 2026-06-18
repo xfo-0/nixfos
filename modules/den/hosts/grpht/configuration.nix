@@ -11,7 +11,7 @@
     primaryUser = "xfo";
 
     settings.network.wake-on-lan = {
-      mac = "00:00:00:00:00:00";
+      mac = "58:47:ca:7b:95:8d";
     };
     settings.backup-sink.enable = true;
     settings.tailscale.enable = true;
