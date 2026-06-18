@@ -14,7 +14,9 @@
       mac = "00:00:00:00:00:00";
     };
     settings.backup-sink.enable = true;
+    settings.tailscale.enable = true;
     settings.services.media.base.enable = true;
+    settings.services.media.proxy.domain = "grpht.tail0df4ba.ts.net";
   };
 
   # ── v1 host composition (scaffolding) ─────────────
@@ -27,6 +29,7 @@
       services.binary-cache.harmonia-client
       wake-on-lan
       wake-client
+      tailscale
       backup-sink
       services.media.base
       services.media.servarr
