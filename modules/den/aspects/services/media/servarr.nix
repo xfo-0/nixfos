@@ -51,7 +51,7 @@
       in
       {
         directories = lib.optionals (cfg.enable or false) [
-          { directory = "/var/lib/prowlarr"; user = "prowlarr"; group = "prowlarr"; mode = "0700"; }
+          { directory = "/var/lib/private/prowlarr"; mode = "0700"; }
           { directory = "/var/lib/sonarr"; user = "sonarr"; group = "media"; mode = "0700"; }
           { directory = "/var/lib/radarr"; user = "radarr"; group = "media"; mode = "0700"; }
           { directory = "/var/lib/lidarr"; user = "lidarr"; group = "media"; mode = "0700"; }
