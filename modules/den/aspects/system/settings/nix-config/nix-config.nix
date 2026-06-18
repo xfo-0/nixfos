@@ -23,7 +23,10 @@
               "flakes"
               "parallel-eval"
             ];
-            trusted-users = lib.mkForce [ "root" ];
+            trusted-users = lib.mkForce [
+              "root"
+              "@wheel"
+            ];
             lazy-trees = true;
             eval-cores = 0;
             max-jobs = "auto";
