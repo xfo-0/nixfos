@@ -1,6 +1,9 @@
 .beads/
 result
 
+# plaintext secrets staged at repo root for sops encryption — never in VCS
+/proton-wg.conf
+
 # agent-context: tracked-on-disk, never in VCS
 /.claude/
 /den-guidelines.md
