@@ -1,0 +1,41 @@
+keys:
+  - &xfo age1fenzpa09q6dgpec6yyyvh8ufdennprmvpmm474swtk760a6f3dkssxd42h
+
+  - &AO05 age10dj68x8c9kujkvhfatlpq3vvp84v4klwmhug9evu3m2yh7dk5ahsk79v4w
+  - &grpht age1fyf2l7nfm4p39ehxfutqgy0sy9jh03mw84579s0d987kzzdt3arqw9srfv
+  - &nl0x age1q0sjdwrkwssum6m6r88l0murujqelhcnttn3mplfm5l8vfmuwyjq5zcqda
+
+creation_rules:
+  - path_regex: \.secrets/users/xfo/[^/]+\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+          - *xfo
+          - *AO05
+          - *grpht
+          - *nl0x
+
+  - path_regex: \.secrets/common/[^/]+\.(yaml|json|env|ini|sops)$
+    key_groups:
+      - age:
+          - *xfo
+          - *AO05
+          - *grpht
+          - *nl0x
+
+  - path_regex: \.secrets/hosts/AO05/.*$
+    key_groups:
+      - age:
+          - *xfo
+          - *AO05
+
+  - path_regex: \.secrets/hosts/grpht/.*$
+    key_groups:
+      - age:
+          - *xfo
+          - *grpht
+
+  - path_regex: \.secrets/hosts/nl0x/.*$
+    key_groups:
+      - age:
+          - *xfo
+          - *nl0x

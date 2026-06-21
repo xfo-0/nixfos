@@ -1,0 +1,21 @@
+schema: spec-driven
+
+context: |
+  NixOS flake configuration built on the "den" framework (aspects, quirks,
+  policies, schema). Hosts: grpht, AO05, nl0x. Canonical source is ~/nx;
+  /etc/nixos is a derived read-only mirror — never edit it.
+  Verification: `nix flake check` and
+  `nix eval --raw .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath`.
+  Conventions: Conventional Commits; self-documenting code (no comments unless a
+  non-obvious workaround); inputs pinned via tack. Issue/task tracking lives in
+  beads (.beads/); openspec is for spec-driven proposals on nontrivial changes.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours

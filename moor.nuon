@@ -1,0 +1,42 @@
+{
+  roots: [
+    /home/xfo/repos
+  ],
+  pins_lock: "/home/xfo/nx/.tack/pins.lock.json",
+  include: [
+    "/home/xfo/.config/moor/inputs.json"
+  ],
+  try: {
+    build: "nix build /home/xfo/nx#nixosConfigurations.$(hostname).config.system.build.toplevel"
+  },
+  verify: {
+    gen: "cd {path}/ci; nix flake check",
+    cli: "cd {path}; nu tests/run.nu"
+  },
+  groups: {
+    den: "tags like '%den%'",
+    gen: "tags like '%gen%'",
+    pinned: "pin_rev != ''",
+    drift: "pin_rev != '' and pin_local = 0",
+    flakes: "flake = 1",
+    rust: "langs like '%Rust%'",
+    untagged: "tags in ('gate:none', 'gate:flake', 'gate:ci', 'gate:verify')",
+    dirty: "dirty = 1",
+    behind: "pin_behind > 0",
+    starred: "starred = 1",
+    private: "private = 1",
+    local: "host = \"local\"",
+    den-gen: "tags like '%den%' or tags like '%gen%'",
+    mine: "tags like '%own%' or tags like '%cli%'",
+    jj: "vcs = 'jj'",
+    fetchable: "host != 'local' and ws = 0",
+    workspaces: "ws = 1",
+    github: "host = 'github.com'",
+    cm-indexed: "tags like '%ai:codebase-memory%'",
+    cm-unindexed: "(tags like '%den%' or tags like '%gen%' or tags like '%own%' or tags like '%cli%') and tags not like '%ai:codebase-memory%'",
+    needs-gate: "(tags like '%own%' or tags like '%cli%') and (tags like '%gate:flake%' or tags like '%gate:none%') and tags not like '%ai:run-skill%'",
+    den-ecosystem: "path in (select path from deps where dep like '%/den' or dep like '%/flake-file' or dep like '%/import-tree' or dep like '%/scope-engine' or dep like '%/gen-schema' or dep like '%/gen-algebra' or dep like '%/tack')",
+    gen-ecosystem: "path in (select path from deps where dep like '%/gen-schema' or dep like '%/gen-algebra')"
+  },
+  repos: []
+}

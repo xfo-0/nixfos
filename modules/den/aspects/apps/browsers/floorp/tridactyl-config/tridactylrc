@@ -1,0 +1,125 @@
+colourscheme kanso
+set yankto clipboard
+set tabopenpos next
+set hintchars flsntdzxquaeihoypb
+set hintfiltermode vimperator-reflow
+set hintuppercase false
+set editorcmd footclient --app-id term_float -e nvim %f
+
+set newtab https://google.com/
+set homepages ["https://google.com/"]
+set searchengine DEFAULT
+set searchurls.DEFAULT https://google.com/search?q=%s
+set searchurls.g      https://www.github.com/search?q=%s
+set searchurls.w      https://en.wikipedia.org/wiki/Special:Search?search=%s
+set searchurls.uw     https://www.wolframalpha.com/input/?i=%s
+set searchurls.pa     https://www.amazon.com/s?k=%s
+set searchurls.pw     https://www.walmart.com/search?q=%s
+set searchurls.y      https://www.youtube.com/results?q=%s
+set searchurls.fha    https://thangs.com/search/%s
+set searchurls.fza    https://booksc.org/s/%s
+set searchurls.fzb    https://b-ok.cc/s/%s
+set searchurls.mb     https://bandcamp.com/search?q=%s
+
+unbindall
+unbind ,
+unbind h
+unbind m
+unbind p
+
+command tabmulti js (async () => { const r = await tri.native.read("/home/xfo/.config/tridactyl/scripts/tab-multi.js"); if (r.code === 0) { (0,eval)(r.content); } else { tri.excmds.fillcmdline_tmp(3000, "tab-multi: read failed"); } })()
+
+bind <Space>T  tabmulti
+bind <Space>tc composite js window.tabMultiAction='close'    ; tabmulti
+bind <Space>tg composite js window.tabMultiAction='give'     ; tabmulti
+bind <Space>tt composite js window.tabMultiAction='take'     ; tabmulti
+bind <Space>tp composite js window.tabMultiAction='pin'      ; tabmulti
+bind <Space>tM composite js window.tabMultiAction='mute'     ; tabmulti
+bind <Space>tr composite js window.tabMultiAction='reload'   ; tabmulti
+bind <Space>tb composite js window.tabMultiAction='bookmark' ; tabmulti
+bind <Escape> composite clearsearchhighlight ; mode normal
+bind :  fillcmdline_notrail
+bind /  fillcmdline find
+
+bind x focusinput -l
+bind z hint -F i => i.click()
+bind --mode=insert <C-o> winopen
+bind --mode=insert <C-e> editor
+bind --mode=insert <Escape> composite unfocus ; mode normal
+
+bind --mode=insert <S-Escape> mode ignore
+bind --mode=ignore <S-Escape> mode normal
+
+bind <Home> scrollto 0
+bind <C-e> findnext -1
+bind n scrollpage -0.5
+bind e scrollpage 0.5
+bind <C-n> findnext 1
+bind <End>  scrollto 100
+
+" ported from floorp custom keyboard shortcuts (disabled: stale-pressedKeys bug, Floorp#2481)
+bind <C-d> tabclose
+bind <C-u> tabopen
+bind <C-l> reload
+bind <C-c> tabprev
+bind <C-i> tabnext
+bind <C-t> fillcmdline buffer
+bind <C-%> buffer #
+bind <C-$> scrollto 100
+bind <C-^> scrollto 0
+bind --mode=insert <C-d> tabclose
+bind --mode=insert <C-u> tabopen
+bind --mode=insert <C-l> reload
+bind --mode=insert <C-c> tabprev
+bind --mode=insert <C-i> tabnext
+bind --mode=insert <C-t> fillcmdline buffer
+
+bind --mode=hint <C-b> hint -qb
+bind --mode=hint <C-f> hint
+bind --mode=hint <C-r> hint -qb
+bind --mode=hint <Escape> hint.reset
+bind --mode=hint <Return> hint.select
+bind <Space>aP tabonly
+bind r hint -b
+bind <Space>r hint
+bind <Space>l hint -h
+bind <Space>h  hint -y
+bind <Space>: hint -c code,pre
+bind <Space>i  hint -i
+bind <Space>v  hint -W mpvsafe
+"bind %m mute toggle
+
+bind ,I hint -qI
+bind ,c downloadshow
+bind ,d tabopen about:devtools-toolbox
+bind ,i hint -I
+bind ,n tabopen about:tridactyl-messages
+bind ,o downloadshow
+bind ,s js tri.excmds.source()
+bind ,x js browser.downloads.cancel()
+
+bind { urlparent
+bind [ urlincrement -1
+bind +  forward
+bind l reload
+bind -  back
+bind ] urlincrement 1
+
+bind D tabonly
+bind d tabclose
+bind <A-c> tabmove -1
+bind c tabprev
+bind t fillcmdline buffer
+bind %  buffer #
+bind i tabnext
+bind <A-i> tabmove +1
+bind a fillcmdline tabopen
+bind pp tabduplicate
+
+bind H  js tri.excmds.yank(location.href)
+bind hb js tri.excmds.yank(document.title)
+bind hh js tri.excmds.yank((document.querySelector('link[rel=canonical]') || {href: location.href}).href)
+bind ht js tri.excmds.yank(`[${document.title}](${location.href})`)
+bind pO  clipboard tabopen sel
+bind po  clipboard tabopen
+bind mm  quickmark
